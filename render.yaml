@@ -1,0 +1,18 @@
+# Render "Blueprint" spec — https://render.com/docs/blueprint-spec
+# Lets Render auto-configure this service from the repo instead of clicking
+# through the dashboard by hand. Render builds and runs the existing
+# Dockerfile as-is; no separate build/start commands needed. Render's Docker
+# runtime routes traffic to whatever port the Dockerfile EXPOSEs (8000) —
+# the CMD's hardcoded --port 8000 already matches that, so no PORT env var
+# plumbing is needed here.
+#
+# The free plan spins the service down after 15 min of no traffic and takes
+# ~30-60s to cold-start on the next request — fine for a portfolio demo,
+# not for anything latency-sensitive. Upgrade the plan below if that matters.
+services:
+  - type: web
+    name: mlb-game-predictor
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health

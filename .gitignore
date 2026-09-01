@@ -1,0 +1,36 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+.ipynb_checkpoints/
+
+# raw pulls are re-fetchable via pybaseball; don't version them
+data/raw/*
+!data/raw/.gitkeep
+
+# processed data can get large; version small samples only if needed.
+# Exceptions: these specific files are what the deployed API actually reads
+# at startup (see src/api/main.py) — committed (all <2MB) so a git-based
+# build (Docker Hub, Render, etc.) can produce a working image without also
+# needing to run the full multi-step fetch pipeline during CI/deploy.
+# features.csv, elo.csv, and the raw schedule/game-log CSVs stay regenerated-
+# only. Refresh the current-season ones (statcast_*.csv, rosters.csv) and
+# recommit periodically — they go stale, there's no live pull at deploy time.
+data/processed/*
+!data/processed/.gitkeep
+!data/processed/game_log.csv
+!data/processed/starters.csv
+!data/processed/statcast_leaderboard.csv
+!data/processed/statcast_batters.csv
+!data/processed/rosters.csv
+
+# trained model artifacts — regenerate with scripts/train.py. The
+# production model IS committed for the same git-build reason as above.
+models/*
+!models/.gitkeep
+!models/production_model.joblib
+
+*.pt
+*.pth
+.DS_Store

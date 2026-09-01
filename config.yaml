@@ -1,0 +1,44 @@
+data:
+  start_season: 2015
+  end_season: 2024
+  raw_dir: data/raw
+  processed_dir: data/processed
+
+features:
+  rolling_windows: [10, 30]        # games, for team form
+  bullpen_fatigue_days: 3          # extra innings accumulated in trailing N days
+  park_factor_window: 150          # games, for trailing park scoring average (~1 season)
+  starter_trailing_starts: 5       # starts, for trailing starter-quality proxy
+
+elo:
+  k_factor: 4
+  home_field_advantage: 24
+  initial_rating: 1500
+  season_regression: 0.25          # fraction reverted to mean between seasons
+
+split:
+  # chronological — no random shuffling across this boundary
+  train_end_season: 2022
+  val_end_season: 2023
+  test_start_season: 2024
+
+model:
+  gbm:
+    n_estimators: 500
+    max_depth: 4
+    learning_rate: 0.03
+  nn:
+    team_embedding_dim: 8
+    # Deliberately smaller than team_embedding_dim, and epochs cut from the
+    # original 30 to 10: with thousands of distinct starting pitchers
+    # averaging only ~30 starts each in a training fold, a same-sized
+    # pitcher embedding table overfits badly (verified: 30 epochs / dim=8
+    # drove train_loss to 0.61 while test log-loss rose to 0.72, worse than
+    # random). This combination was swept on one fold and cut log-loss on
+    # held-out data from 0.72 to 0.68 — see README Results.
+    pitcher_embedding_dim: 4
+    hidden_dims: [64, 32]
+    dropout: 0.2
+    lr: 0.001
+    batch_size: 256
+    epochs: 10

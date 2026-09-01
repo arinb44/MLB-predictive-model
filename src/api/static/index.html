@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MLB Game Outcome Predictor</title>
+<style>
+  :root {
+    --bg: #0f1720;
+    --panel: #182231;
+    --panel-2: #1f2b3d;
+    --border: #2b3a4f;
+    --text: #e7edf5;
+    --text-dim: #93a3b8;
+    --home: #4f8cff;
+    --away: #ff8a4f;
+    --accent: #2ecc8f;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 24px 16px 64px;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .subtitle { color: var(--text-dim); margin: 0 0 28px; font-size: 0.92rem; }
+
+  .matchup { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: start; }
+  .side { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .side.home { border-top: 3px solid var(--home); }
+  .side.away { border-top: 3px solid var(--away); }
+  .side h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin: 0 0 12px; }
+
+  .vs { display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-weight: 600; padding-top: 40px; }
+
+  label { display: block; font-size: 0.82rem; color: var(--text-dim); margin: 12px 0 4px; }
+  label:first-of-type { margin-top: 0; }
+  select, input[type="date"] {
+    width: 100%; padding: 9px 10px; background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px; font-size: 0.92rem;
+  }
+  select:disabled { opacity: 0.5; }
+
+  .hitter-list { max-height: 160px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); }
+  .hitter-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 0.86rem; }
+  .hitter-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+  .hitter-row input { accent-color: var(--accent); }
+  .hitter-hint { font-size: 0.74rem; color: var(--text-dim); margin-top: 4px; }
+
+  .controls-row { display: flex; gap: 16px; align-items: end; margin-top: 20px; flex-wrap: wrap; }
+  .controls-row .field { flex: 0 0 200px; }
+  button#predict-btn {
+    background: var(--accent); color: #06251a; border: none; border-radius: 8px;
+    padding: 11px 22px; font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  }
+  button#predict-btn:hover { filter: brightness(1.08); }
+  button#predict-btn:disabled { opacity: 0.5; cursor: default; }
+
+  #error { color: #ff6b6b; font-size: 0.86rem; margin-top: 12px; display: none; }
+
+  #results { margin-top: 28px; display: none; }
+  .prob-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; text-align: center; }
+  .prob-bar { display: flex; height: 34px; border-radius: 8px; overflow: hidden; margin: 14px 0 8px; }
+  .prob-bar .seg-home { background: var(--home); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.88rem; color: #fff; }
+  .prob-bar .seg-away { background: var(--away); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.88rem; color: #fff; }
+  .prob-labels { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-dim); }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+  .stat-panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .stat-panel h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin: 0 0 10px; }
+  .stat-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.88rem; border-bottom: 1px solid var(--border); }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .val { font-weight: 600; }
+  .stat-panel.home { border-top: 3px solid var(--home); }
+  .stat-panel.away { border-top: 3px solid var(--away); }
+
+  .hitter-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-top: 8px; }
+  .hitter-card .name { font-weight: 600; font-size: 0.88rem; margin-bottom: 4px; }
+  .hitter-card .line { color: var(--text-dim); font-size: 0.8rem; }
+  .empty-note { color: var(--text-dim); font-size: 0.82rem; font-style: italic; }
+
+  #loading { display: none; color: var(--text-dim); font-size: 0.86rem; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>MLB Game Outcome Predictor</h1>
+  <p class="subtitle">
+    Pick two teams, optionally a starting pitcher and up to 3 hitters per side, and get a calibrated
+    win probability plus real current-season context. Pitcher/hitter stats shown are informational —
+    only team form, Elo, and the trailing starter proxy actually drive the prediction (see the project README).
+  </p>
+
+  <div class="matchup">
+    <div class="side home">
+      <h2>Home</h2>
+      <label for="home-team">Team</label>
+      <select id="home-team"></select>
+
+      <label for="home-pitcher">Starting pitcher</label>
+      <select id="home-pitcher" disabled><option value="">— optional —</option></select>
+
+      <label>Hitters (up to 3)</label>
+      <div class="hitter-list" id="home-hitters"></div>
+      <div class="hitter-hint">Optional — informational only</div>
+    </div>
+
+    <div class="vs">@</div>
+
+    <div class="side away">
+      <h2>Away</h2>
+      <label for="away-team">Team</label>
+      <select id="away-team"></select>
+
+      <label for="away-pitcher">Starting pitcher</label>
+      <select id="away-pitcher" disabled><option value="">— optional —</option></select>
+
+      <label>Hitters (up to 3)</label>
+      <div class="hitter-list" id="away-hitters"></div>
+      <div class="hitter-hint">Optional — informational only</div>
+    </div>
+  </div>
+
+  <div class="controls-row">
+    <div class="field">
+      <label for="game-date">Date</label>
+      <input type="date" id="game-date">
+    </div>
+    <button id="predict-btn">Predict</button>
+  </div>
+
+  <div id="loading">Computing prediction…</div>
+  <div id="error"></div>
+
+  <div id="results">
+    <div class="prob-card">
+      <div id="prob-title" style="font-size:0.9rem;color:var(--text-dim)"></div>
+      <div class="prob-bar" id="prob-bar"></div>
+      <div class="prob-labels">
+        <span id="prob-home-label"></span>
+        <span id="prob-away-label"></span>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-panel home">
+        <h3 id="home-stats-title">Home</h3>
+        <div id="home-stats"></div>
+        <div id="home-hitter-cards"></div>
+      </div>
+      <div class="stat-panel away">
+        <h3 id="away-stats-title">Away</h3>
+        <div id="away-stats"></div>
+        <div id="away-hitter-cards"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "";
+
+async function getJSON(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+  return res.json();
+}
+
+function fmtPct(x) { return (x * 100).toFixed(1) + "%"; }
+function fmtNum(x, d = 1) { return x === null || x === undefined ? "—" : Number(x).toFixed(d); }
+
+async function loadTeams() {
+  const teams = await getJSON(`${API}/teams`);
+  for (const sel of [document.getElementById("home-team"), document.getElementById("away-team")]) {
+    sel.innerHTML = "";
+    for (const t of teams) {
+      const opt = document.createElement("option");
+      opt.value = t; opt.textContent = t;
+      sel.appendChild(opt);
+    }
+  }
+  document.getElementById("home-team").value = "NYY";
+  document.getElementById("away-team").value = "BOS";
+}
+
+async function loadRoster(side) {
+  const team = document.getElementById(`${side}-team`).value;
+  const pitcherSel = document.getElementById(`${side}-pitcher`);
+  const hittersDiv = document.getElementById(`${side}-hitters`);
+  pitcherSel.disabled = true;
+  pitcherSel.innerHTML = `<option value="">loading…</option>`;
+  hittersDiv.innerHTML = "";
+
+  try {
+    const roster = await getJSON(`${API}/roster/${team}`);
+    pitcherSel.innerHTML = `<option value="">— optional —</option>`;
+    for (const p of roster.pitchers) {
+      const opt = document.createElement("option");
+      opt.value = p.player_id; opt.textContent = p.name;
+      pitcherSel.appendChild(opt);
+    }
+    pitcherSel.disabled = false;
+
+    hittersDiv.innerHTML = "";
+    for (const h of roster.hitters) {
+      const row = document.createElement("label");
+      row.className = "hitter-row";
+      row.innerHTML = `<input type="checkbox" value="${h.player_id}"> ${h.name}`;
+      hittersDiv.appendChild(row);
+    }
+    hittersDiv.addEventListener("change", () => enforceHitterLimit(hittersDiv));
+  } catch (e) {
+    pitcherSel.innerHTML = `<option value="">(roster unavailable)</option>`;
+  }
+}
+
+function enforceHitterLimit(container) {
+  const checked = container.querySelectorAll("input:checked");
+  const all = container.querySelectorAll("input");
+  if (checked.length >= 3) {
+    all.forEach(cb => { if (!cb.checked) cb.disabled = true; });
+  } else {
+    all.forEach(cb => { cb.disabled = false; });
+  }
+}
+
+function selectedHitterIds(side) {
+  const container = document.getElementById(`${side}-hitters`);
+  return Array.from(container.querySelectorAll("input:checked")).map(cb => cb.value);
+}
+
+function renderProbBar(homeTeam, awayTeam, prob) {
+  document.getElementById("prob-title").textContent = `${homeTeam} vs ${awayTeam}`;
+  const bar = document.getElementById("prob-bar");
+  bar.innerHTML = `
+    <div class="seg-home" style="width:${prob * 100}%">${prob >= 0.12 ? fmtPct(prob) : ""}</div>
+    <div class="seg-away" style="width:${(1 - prob) * 100}%">${(1 - prob) >= 0.12 ? fmtPct(1 - prob) : ""}</div>
+  `;
+  document.getElementById("prob-home-label").textContent = `${homeTeam} (home)`;
+  document.getElementById("prob-away-label").textContent = `${awayTeam} (away)`;
+}
+
+function statRow(label, value) {
+  return `<div class="stat-row"><span>${label}</span><span class="val">${value}</span></div>`;
+}
+
+function renderTeamStats(side, team, teamStats, pitcherStats) {
+  document.getElementById(`${side}-stats-title`).textContent = team;
+  let html = "";
+  html += statRow("Recent win %", teamStats.win_pct_last10 !== null ? fmtPct(teamStats.win_pct_last10) : "—");
+  html += statRow("Runs scored (L10 avg)", fmtNum(teamStats.runs_scored_last10));
+  html += statRow("Elo rating", fmtNum(teamStats.elo, 0));
+  if (pitcherStats) {
+    html += statRow("Starter ERA", fmtNum(pitcherStats.era, 2));
+    html += statRow("Starter W-L", `${pitcherStats.win}-${pitcherStats.loss}`);
+    html += statRow("Starter xwOBA", fmtNum(pitcherStats.xwoba, 3));
+    html += statRow("Starter K% / BB%", `${fmtNum(pitcherStats.k_percent)}% / ${fmtNum(pitcherStats.bb_percent)}%`);
+  }
+  document.getElementById(`${side}-stats`).innerHTML = html;
+}
+
+function renderHitterCards(side, hitters) {
+  const el = document.getElementById(`${side}-hitter-cards`);
+  if (!hitters.length) { el.innerHTML = ""; return; }
+  el.innerHTML = hitters.map(h => `
+    <div class="hitter-card">
+      <div class="name">${h.name}</div>
+      <div class="line">AVG ${fmtNum(h.avg, 3)} · SLG ${fmtNum(h.slg, 3)} · OBP ${fmtNum(h.obp, 3)} · RBI ${h.rbi} · Runs ${h.runs} · wOBA ${fmtNum(h.woba, 3)}</div>
+    </div>
+  `).join("");
+}
+
+async function predict() {
+  const homeTeam = document.getElementById("home-team").value;
+  const awayTeam = document.getElementById("away-team").value;
+  if (homeTeam === awayTeam) {
+    showError("Home and away teams must be different.");
+    document.getElementById("results").style.display = "none";
+    return;
+  }
+  const payload = {
+    home_team: homeTeam,
+    away_team: awayTeam,
+    home_pitcher_id: document.getElementById("home-pitcher").value || null,
+    away_pitcher_id: document.getElementById("away-pitcher").value || null,
+    home_hitter_ids: selectedHitterIds("home"),
+    away_hitter_ids: selectedHitterIds("away"),
+  };
+  const dateVal = document.getElementById("game-date").value;
+  if (dateVal) payload.game_date = dateVal;
+
+  hideError();
+  document.getElementById("loading").style.display = "block";
+  document.getElementById("predict-btn").disabled = true;
+  document.getElementById("results").style.display = "none";
+
+  try {
+    const res = await fetch(`${API}/predict`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.detail || res.statusText);
+    }
+    const data = await res.json();
+
+    renderProbBar(data.home_team, data.away_team, data.home_win_probability);
+    renderTeamStats("home", data.home_team, data.home_team_stats, data.home_pitcher_stats);
+    renderTeamStats("away", data.away_team, data.away_team_stats, data.away_pitcher_stats);
+    renderHitterCards("home", data.home_hitter_stats);
+    renderHitterCards("away", data.away_hitter_stats);
+
+    document.getElementById("results").style.display = "block";
+  } catch (e) {
+    showError(e.message || String(e));
+  } finally {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("predict-btn").disabled = false;
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById("error");
+  el.textContent = msg;
+  el.style.display = "block";
+}
+function hideError() {
+  document.getElementById("error").style.display = "none";
+}
+
+document.getElementById("home-team").addEventListener("change", () => loadRoster("home"));
+document.getElementById("away-team").addEventListener("change", () => loadRoster("away"));
+document.getElementById("predict-btn").addEventListener("click", predict);
+
+(async () => {
+  await loadTeams();
+  await Promise.all([loadRoster("home"), loadRoster("away")]);
+})();
+</script>
+</body>
+</html>
