@@ -15,7 +15,8 @@ data/raw/*
 # build (Docker Hub, Render, etc.) can produce a working image without also
 # needing to run the full multi-step fetch pipeline during CI/deploy.
 # features.csv, elo.csv, and the raw schedule/game-log CSVs stay regenerated-
-# only. Refresh the current-season ones (statcast_*.csv, rosters.csv) and
+# only. Refresh the current-season ones (statcast_*.csv, rosters.csv,
+# player_war.csv, team_stats.csv) and
 # recommit periodically — they go stale, there's no live pull at deploy time.
 data/processed/*
 !data/processed/.gitkeep
@@ -24,6 +25,8 @@ data/processed/*
 !data/processed/statcast_leaderboard.csv
 !data/processed/statcast_batters.csv
 !data/processed/rosters.csv
+!data/processed/player_war.csv
+!data/processed/team_stats.csv
 
 # trained model artifacts — regenerate with scripts/train.py. The
 # production model IS committed for the same git-build reason as above.
