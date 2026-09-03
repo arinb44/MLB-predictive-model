@@ -42,7 +42,9 @@ def load_config(path: str = "config.yaml") -> dict:
 def fetch_war_file(url: str, season: int) -> pd.DataFrame:
     resp = requests.get(url, headers=HEADERS, timeout=120)
     resp.raise_for_status()
-    df = pd.read_csv(StringIO(resp.text), low_memory=False)
+    # The files are UTF-8 but served without a charset, so requests would
+    # fall back to ISO-8859-1 and mangle accented names ("HernÃ¡ndez").
+    df = pd.read_csv(StringIO(resp.content.decode("utf-8")), low_memory=False)
     df = df[df["year_ID"] == season].copy()
     df["team"] = df["team_ID"].map(canonical_team)
     return df

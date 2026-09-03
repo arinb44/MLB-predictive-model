@@ -10,7 +10,9 @@ Baseball-Reference switched the Athletics' code from OAK to ATH starting in
 OAK stays the canonical code here and ATH is mapped onto it on ingest.
 """
 
-LOGO_URL = "https://www.mlbstatic.com/team-logos/{mlb_id}.svg"
+# The "on-dark" variant: the default logos use each team's dark primary
+# color (e.g. Yankees navy), which disappears against the UI's dark theme.
+LOGO_URL = "https://www.mlbstatic.com/team-logos/team-cap-on-dark/{mlb_id}.svg"
 
 TEAMS = {
     "ARI": {"mlb_id": 109, "name": "Arizona Diamondbacks", "league": "NL", "division": "NL West", "color": "#A71930"},
