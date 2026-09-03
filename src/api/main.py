@@ -45,7 +45,7 @@ from pydantic import BaseModel, Field
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.data.build_features import add_starter_features, build_game_features, merge_elo_features  # noqa: E402
-from src.data.teams import TEAMS, logo_url  # noqa: E402
+from src.data.teams import TEAMS, logo_url, primary_logo_url  # noqa: E402
 from src.models.elo import compute_elo_ratings  # noqa: E402
 
 _state: dict = {}
@@ -370,10 +370,13 @@ def roster(team: str) -> RosterResponse:
 class TeamMeta(BaseModel):
     team: str
     name: str
+    city: str
     league: str
     division: str
+    ballpark: str
     color: str
     logo_url: str
+    primary_logo_url: str
 
 
 class PlayerStatLine(BaseModel):
@@ -454,8 +457,9 @@ class TeamStatLine(BaseModel):
 @app.get("/teams/meta", response_model=List[TeamMeta])
 def teams_meta() -> List[TeamMeta]:
     return [
-        TeamMeta(team=code, name=meta["name"], league=meta["league"], division=meta["division"],
-                 color=meta["color"], logo_url=logo_url(code))
+        TeamMeta(team=code, name=meta["name"], city=meta["city"], league=meta["league"], division=meta["division"],
+                 ballpark=meta["ballpark"], color=meta["color"],
+                 logo_url=logo_url(code), primary_logo_url=primary_logo_url(code))
         for code, meta in sorted(TEAMS.items())
     ]
 
