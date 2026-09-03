@@ -209,7 +209,9 @@ linkable: `#predict`, `#players`, `#teams`):
   bar runs (held to a ~1.8s minimum so the result doesn't just flicker in),
   then the win probability lands on a matchup card — dark split design with
   each team's real logo fading in from its edge, adapted from a Figma Make
-  template — followed by a side-by-side stat comparison.
+  template — followed by a side-by-side stat comparison. See
+  [`docs/matchup-card.md`](docs/matchup-card.md) for how the card is built,
+  with copy-paste code for reusing it in other projects.
 - **Players** — every player's season line as a dot plot. *Leaderboard*
   ranks players on one stat (WAR by default; OPS+, xwOBA, hard-hit %, ERA+,
   whiff %, and more), each row tagged with the team logo. *Compare* plots any
