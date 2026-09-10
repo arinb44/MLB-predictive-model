@@ -370,16 +370,6 @@ data artifacts described above unless you also commit them — which, per
 the previous section, this repo now does, so CI exercises the full suite
 including `tests/test_api.py`, not just the leakage/Elo tests.
 
-## License
-
-Code in this repo is MIT-licensed — see [`LICENSE`](LICENSE).
-
-The **data and trademarks are not**. Team logos are served from MLB's own CDN
-(`mlbstatic.com`) and remain MLB's property; the stats come from
-Baseball-Reference, Baseball Savant, and MLB's Stats API under their
-respective terms. Nothing here is affiliated with or endorsed by MLB. Check
-those terms before using any of it beyond personal or portfolio work.
-
 ### Model explainability
 
 ```bash
@@ -403,3 +393,13 @@ a real signal the model learned something sensible rather than a spurious
 correlation. `elo_home_win_prob`/`home_elo_pre` dominate both models' top
 feature by a wide margin, consistent with Elo being the single most
 information-dense input available.
+
+## License
+
+Code in this repo is MIT-licensed — see [`LICENSE`](LICENSE).
+
+The **data and trademarks are not**. Team logos are served from MLB's own CDN
+(`mlbstatic.com`) and remain MLB's property; the stats come from
+Baseball-Reference, Baseball Savant, and MLB's Stats API under their
+respective terms. Nothing here is affiliated with or endorsed by MLB. Check
+those terms before using any of it beyond personal or portfolio work.
