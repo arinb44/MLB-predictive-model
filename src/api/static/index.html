@@ -10,11 +10,13 @@
     --panel: #182231;
     --panel-2: #1f2b3d;
     --border: #2b3a4f;
+    --grid: #243247;
     --text: #e7edf5;
     --text-dim: #93a3b8;
     --home: #4f8cff;
     --away: #ff8a4f;
     --accent: #2ecc8f;
+    --muted-dot: #4a5b73;
     --radius: 10px;
   }
   * { box-sizing: border-box; }
@@ -23,168 +25,676 @@
     background: var(--bg);
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    padding: 24px 16px 64px;
+    padding: 0 16px 64px;
   }
-  .wrap { max-width: 920px; margin: 0 auto; }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+
+  /* ---------- header + tabs ---------- */
+  header.topbar { padding: 24px 0 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
   h1 { font-size: 1.5rem; margin: 0 0 4px; }
-  .subtitle { color: var(--text-dim); margin: 0 0 28px; font-size: 0.92rem; }
+  .subtitle { color: var(--text-dim); margin: 0 0 18px; font-size: 0.92rem; max-width: 760px; }
+  nav.tabs { display: flex; gap: 4px; }
+  nav.tabs button {
+    background: none; border: none; color: var(--text-dim); font-size: 0.95rem; font-weight: 600;
+    padding: 10px 16px; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px;
+  }
+  nav.tabs button:hover { color: var(--text); }
+  nav.tabs button.active { color: var(--text); border-bottom-color: var(--accent); }
+  section.tab { display: none; }
+  section.tab.active { display: block; }
 
-  .matchup { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: start; }
-  .side { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-  .side.home { border-top: 3px solid var(--home); }
-  .side.away { border-top: 3px solid var(--away); }
-  .side h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin: 0 0 12px; }
+  h2.section-title { font-size: 1.05rem; margin: 0 0 4px; }
+  .section-note { color: var(--text-dim); font-size: 0.84rem; margin: 0 0 16px; }
 
-  .vs { display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-weight: 600; padding-top: 40px; }
-
+  /* ---------- shared bits ---------- */
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
   label { display: block; font-size: 0.82rem; color: var(--text-dim); margin: 12px 0 4px; }
-  label:first-of-type { margin-top: 0; }
-  select, input[type="date"] {
+  select, input[type="date"], input[type="number"] {
     width: 100%; padding: 9px 10px; background: var(--panel-2); color: var(--text);
     border: 1px solid var(--border); border-radius: 8px; font-size: 0.92rem;
   }
   select:disabled { opacity: 0.5; }
+  .logo { display: inline-block; object-fit: contain; flex: none; }
+  .logo-sm { width: 20px; height: 20px; }
+  .logo-md { width: 36px; height: 36px; }
+  .logo-lg { width: 56px; height: 56px; }
+  .logo-xl { width: 72px; height: 72px; }
+  .empty-note { color: var(--text-dim); font-size: 0.84rem; font-style: italic; padding: 12px 0; }
+  .source-note { color: var(--text-dim); font-size: 0.76rem; margin-top: 10px; }
+
+  .segmented { display: inline-flex; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+  .segmented button {
+    background: none; border: none; color: var(--text-dim); padding: 6px 14px; border-radius: 6px;
+    font-size: 0.86rem; font-weight: 600; cursor: pointer;
+  }
+  .segmented button.active { background: var(--border); color: var(--text); }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: end; margin-bottom: 16px; }
+  .controls .field { flex: 1 1 160px; min-width: 140px; }
+  .controls .field label { margin-top: 0; }
+  .controls .field.narrow { flex: 0 1 110px; min-width: 90px; }
+
+  .team-banner { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .team-banner .name { font-size: 1.2rem; font-weight: 700; }
+  .team-banner .sub { color: var(--text-dim); font-size: 0.86rem; }
+
+  .chart { width: 100%; }
+  .chart svg { display: block; width: 100%; }
+  .chart text { fill: var(--text); font-size: 12px; }
+  .chart .dim { fill: var(--text-dim); font-size: 11px; }
+  .chart .gridline { stroke: var(--grid); stroke-width: 1; }
+  .chart .refline { stroke: var(--text-dim); stroke-width: 1; stroke-dasharray: 4 4; }
+  .chart .stem { stroke: var(--border); stroke-width: 2; }
+  .chart .stripe { fill: var(--panel-2); opacity: 0.45; }
+  .chart .hit { cursor: pointer; }
+  .chart .hit:hover circle, .chart .hit:hover image { filter: brightness(1.25); }
+  .chart .hit:hover .stripe-hover { fill: var(--panel-2); opacity: 1; }
+  .chart .stripe-hover { fill: transparent; }
+
+  #tooltip {
+    position: fixed; pointer-events: none; z-index: 10; display: none;
+    background: #0b1119; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px;
+    font-size: 0.8rem; line-height: 1.45; max-width: 260px; box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  }
+  #tooltip .tt-head { display: flex; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 4px; }
+  #tooltip .tt-row { display: flex; justify-content: space-between; gap: 14px; color: var(--text-dim); }
+  #tooltip .tt-row b { color: var(--text); font-weight: 600; }
+
+  /* ---------- predictions ---------- */
+  .matchup { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: start; }
+  .side { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .side.home { border-top: 3px solid var(--home); }
+  .side.away { border-top: 3px solid var(--away); }
+  .side-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; min-height: 56px; }
+  .side-head .role { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); }
+  .side-head .name { font-size: 1.05rem; font-weight: 700; }
+  .side-head .sub { font-size: 0.8rem; color: var(--text-dim); }
+  .side label:first-of-type { margin-top: 0; }
+  .vs { display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-weight: 600; padding-top: 70px; }
 
   .hitter-list { max-height: 160px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); }
-  .hitter-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 0.86rem; }
+  .hitter-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 0.86rem; margin: 0; color: var(--text); }
   .hitter-row:not(:last-child) { border-bottom: 1px solid var(--border); }
   .hitter-row input { accent-color: var(--accent); }
   .hitter-hint { font-size: 0.74rem; color: var(--text-dim); margin-top: 4px; }
 
   .controls-row { display: flex; gap: 16px; align-items: end; margin-top: 20px; flex-wrap: wrap; }
   .controls-row .field { flex: 0 0 200px; }
-  button#predict-btn {
+  .controls-row .field label { margin-top: 0; }
+  button.primary {
     background: var(--accent); color: #06251a; border: none; border-radius: 8px;
     padding: 11px 22px; font-size: 0.95rem; font-weight: 600; cursor: pointer;
   }
-  button#predict-btn:hover { filter: brightness(1.08); }
-  button#predict-btn:disabled { opacity: 0.5; cursor: default; }
+  button.primary:hover { filter: brightness(1.08); }
+  button.primary:disabled { opacity: 0.5; cursor: default; }
+  button.secondary {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; font-size: 0.86rem; font-weight: 600; cursor: pointer;
+  }
+  button.secondary:hover { border-color: var(--text-dim); }
 
   #error { color: #ff6b6b; font-size: 0.86rem; margin-top: 12px; display: none; }
+  #loading { display: none; color: var(--text-dim); font-size: 0.86rem; margin-top: 12px; }
 
   #results { margin-top: 28px; display: none; }
-  .prob-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; text-align: center; }
-  .prob-bar { display: flex; height: 34px; border-radius: 8px; overflow: hidden; margin: 14px 0 8px; }
-  .prob-bar .seg-home { background: var(--home); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.88rem; color: #fff; }
-  .prob-bar .seg-away { background: var(--away); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.88rem; color: #fff; }
-  .prob-labels { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-dim); }
+  .prob-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .banner { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
+  .banner .team { display: flex; align-items: center; gap: 14px; }
+  .banner .team.away { flex-direction: row-reverse; text-align: right; }
+  .banner .team .name { font-weight: 700; font-size: 1.05rem; }
+  .banner .team .pct { font-size: 1.9rem; font-weight: 800; line-height: 1.1; }
+  .banner .team.home .pct { color: var(--home); }
+  .banner .team.away .pct { color: var(--away); }
+  .banner .team .tag { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); }
+  .banner .mid { color: var(--text-dim); font-size: 0.82rem; text-align: center; }
+  .prob-bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; margin: 18px 0 6px; }
+  .prob-bar .seg-home { background: var(--home); }
+  .prob-bar .seg-away { background: var(--away); }
 
   .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
   .stat-panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-  .stat-panel h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin: 0 0 10px; }
+  .stat-panel h3 { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; margin: 0 0 10px; }
   .stat-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.88rem; border-bottom: 1px solid var(--border); }
   .stat-row:last-child { border-bottom: none; }
   .stat-row .val { font-weight: 600; }
   .stat-panel.home { border-top: 3px solid var(--home); }
   .stat-panel.away { border-top: 3px solid var(--away); }
-
   .hitter-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-top: 8px; }
   .hitter-card .name { font-weight: 600; font-size: 0.88rem; margin-bottom: 4px; }
   .hitter-card .line { color: var(--text-dim); font-size: 0.8rem; }
-  .empty-note { color: var(--text-dim); font-size: 0.82rem; font-style: italic; }
 
-  #loading { display: none; color: var(--text-dim); font-size: 0.86rem; margin-top: 12px; }
+  /* ---------- teams ---------- */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 18px; }
+  .tile { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .tile .k { font-size: 0.74rem; color: var(--text-dim); }
+  .tile .v { font-size: 1.25rem; font-weight: 700; margin: 2px 0; }
+  .tile .r { font-size: 0.74rem; color: var(--text-dim); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .two-col h3 { font-size: 0.86rem; margin: 0 0 8px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+  .detail-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .block { margin-top: 24px; }
+
+  @media (max-width: 720px) {
+    .matchup { grid-template-columns: 1fr; }
+    .vs { padding-top: 0; }
+    .stat-grid, .two-col { grid-template-columns: 1fr; }
+    .banner .team .pct { font-size: 1.4rem; }
+    .logo-xl { width: 48px; height: 48px; }
+    nav.tabs button { padding: 10px 10px; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>MLB Game Outcome Predictor</h1>
-  <p class="subtitle">
-    Pick two teams, optionally a starting pitcher and up to 3 hitters per side, and get a calibrated
-    win probability plus real current-season context. Pitcher/hitter stats shown are informational —
-    only team form, Elo, and the trailing starter proxy actually drive the prediction (see the project README).
-  </p>
+  <header class="topbar">
+    <h1>MLB Game Outcome Predictor</h1>
+    <p class="subtitle">
+      Calibrated win probabilities for any matchup, plus season stats for every player and team.
+      Only team form, Elo, and the trailing starter proxy drive the prediction; everything else here is
+      display-only context (see the project README).
+    </p>
+    <nav class="tabs" role="tablist">
+      <button data-tab="predict" role="tab">Predictions</button>
+      <button data-tab="players" role="tab">Players</button>
+      <button data-tab="teams" role="tab">Teams</button>
+    </nav>
+  </header>
 
-  <div class="matchup">
-    <div class="side home">
-      <h2>Home</h2>
-      <label for="home-team">Team</label>
-      <select id="home-team"></select>
+  <!-- ============ PREDICTIONS ============ -->
+  <section class="tab" id="tab-predict">
+    <div class="matchup">
+      <div class="side home">
+        <div class="side-head" id="home-head"></div>
+        <label for="home-team">Team</label>
+        <select id="home-team"></select>
 
-      <label for="home-pitcher">Starting pitcher</label>
-      <select id="home-pitcher" disabled><option value="">— optional —</option></select>
+        <label for="home-pitcher">Starting pitcher</label>
+        <select id="home-pitcher" disabled><option value="">— optional —</option></select>
 
-      <label>Hitters (up to 3)</label>
-      <div class="hitter-list" id="home-hitters"></div>
-      <div class="hitter-hint">Optional — informational only</div>
-    </div>
+        <label>Hitters (up to 3)</label>
+        <div class="hitter-list" id="home-hitters"></div>
+        <div class="hitter-hint">Optional — informational only</div>
+      </div>
 
-    <div class="vs">@</div>
+      <div class="vs">@</div>
 
-    <div class="side away">
-      <h2>Away</h2>
-      <label for="away-team">Team</label>
-      <select id="away-team"></select>
+      <div class="side away">
+        <div class="side-head" id="away-head"></div>
+        <label for="away-team">Team</label>
+        <select id="away-team"></select>
 
-      <label for="away-pitcher">Starting pitcher</label>
-      <select id="away-pitcher" disabled><option value="">— optional —</option></select>
+        <label for="away-pitcher">Starting pitcher</label>
+        <select id="away-pitcher" disabled><option value="">— optional —</option></select>
 
-      <label>Hitters (up to 3)</label>
-      <div class="hitter-list" id="away-hitters"></div>
-      <div class="hitter-hint">Optional — informational only</div>
-    </div>
-  </div>
-
-  <div class="controls-row">
-    <div class="field">
-      <label for="game-date">Date</label>
-      <input type="date" id="game-date">
-    </div>
-    <button id="predict-btn">Predict</button>
-  </div>
-
-  <div id="loading">Computing prediction…</div>
-  <div id="error"></div>
-
-  <div id="results">
-    <div class="prob-card">
-      <div id="prob-title" style="font-size:0.9rem;color:var(--text-dim)"></div>
-      <div class="prob-bar" id="prob-bar"></div>
-      <div class="prob-labels">
-        <span id="prob-home-label"></span>
-        <span id="prob-away-label"></span>
+        <label>Hitters (up to 3)</label>
+        <div class="hitter-list" id="away-hitters"></div>
+        <div class="hitter-hint">Optional — informational only</div>
       </div>
     </div>
 
-    <div class="stat-grid">
-      <div class="stat-panel home">
-        <h3 id="home-stats-title">Home</h3>
-        <div id="home-stats"></div>
-        <div id="home-hitter-cards"></div>
+    <div class="controls-row">
+      <div class="field">
+        <label for="game-date">Date</label>
+        <input type="date" id="game-date">
       </div>
-      <div class="stat-panel away">
-        <h3 id="away-stats-title">Away</h3>
-        <div id="away-stats"></div>
-        <div id="away-hitter-cards"></div>
+      <button class="primary" id="predict-btn">Predict</button>
+    </div>
+
+    <div id="loading">Computing prediction…</div>
+    <div id="error"></div>
+
+    <div id="results">
+      <div class="prob-card">
+        <div class="banner" id="prob-banner"></div>
+        <div class="prob-bar" id="prob-bar"></div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-panel home">
+          <h3 id="home-stats-title">Home</h3>
+          <div id="home-stats"></div>
+          <div id="home-hitter-cards"></div>
+        </div>
+        <div class="stat-panel away">
+          <h3 id="away-stats-title">Away</h3>
+          <div id="away-stats"></div>
+          <div id="away-hitter-cards"></div>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- ============ PLAYERS ============ -->
+  <section class="tab" id="tab-players">
+    <h2 class="section-title">Player stats</h2>
+    <p class="section-note">Each dot is a player. Hover for their full line; pick a team to see its logo and roster.</p>
+
+    <div class="controls">
+      <div class="field narrow" style="flex-basis:auto">
+        <label>Role</label>
+        <div class="segmented" id="p-role">
+          <button data-v="hitter" class="active">Hitters</button>
+          <button data-v="pitcher">Pitchers</button>
+        </div>
+      </div>
+      <div class="field narrow" style="flex-basis:auto">
+        <label>View</label>
+        <div class="segmented" id="p-view">
+          <button data-v="ranked" class="active">Leaderboard</button>
+          <button data-v="scatter">Compare</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="p-team">Team</label>
+        <select id="p-team"></select>
+      </div>
+      <div class="field" id="p-x-field" style="display:none">
+        <label for="p-x">X axis</label>
+        <select id="p-x"></select>
+      </div>
+      <div class="field">
+        <label for="p-metric" id="p-metric-label">Stat</label>
+        <select id="p-metric"></select>
+      </div>
+      <div class="field narrow">
+        <label for="p-min" id="p-min-label">Min PA</label>
+        <input type="number" id="p-min" min="0" step="10">
+      </div>
+      <div class="field narrow" id="p-top-field">
+        <label for="p-top">Show</label>
+        <select id="p-top">
+          <option value="25">Top 25</option>
+          <option value="50">Top 50</option>
+          <option value="100">Top 100</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="team-banner" id="p-banner" style="display:none"></div>
+      <div class="chart" id="p-chart"></div>
+      <div class="source-note">
+        WAR, OPS+, ERA+: Baseball-Reference (bWAR). AVG/OBP/SLG, wOBA, xwOBA, contact and plate-discipline rates: Baseball Savant.
+        Season-to-date; display only, not model inputs.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TEAMS ============ -->
+  <section class="tab" id="tab-teams">
+    <h2 class="section-title">Team stats</h2>
+    <p class="section-note">
+      Offensive rating is team OPS+ (100 = league average, park-adjusted). Click a team logo for its full breakdown.
+    </p>
+
+    <div class="controls">
+      <div class="field narrow" style="flex-basis:auto">
+        <label>View</label>
+        <div class="segmented" id="t-view">
+          <button data-v="ranked" class="active">Rankings</button>
+          <button data-v="scatter">Compare</button>
+        </div>
+      </div>
+      <div class="field narrow" style="flex-basis:auto">
+        <label>League</label>
+        <div class="segmented" id="t-league">
+          <button data-v="" class="active">MLB</button>
+          <button data-v="AL">AL</button>
+          <button data-v="NL">NL</button>
+        </div>
+      </div>
+      <div class="field" id="t-x-field" style="display:none">
+        <label for="t-x">X axis</label>
+        <select id="t-x"></select>
+      </div>
+      <div class="field">
+        <label for="t-metric" id="t-metric-label">Stat</label>
+        <select id="t-metric"></select>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="chart" id="t-chart"></div>
+      <div class="source-note">Team totals: MLB Stats API. OPS+ and WAR: Baseball-Reference. Season-to-date.</div>
+    </div>
+
+    <div class="panel block" id="t-detail">
+      <div class="detail-head">
+        <div class="team-banner" id="t-banner" style="margin:0"></div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+          <select id="t-select" style="width:auto"></select>
+          <button class="secondary" id="t-predict">Predict a game →</button>
+        </div>
+      </div>
+      <div class="tiles" id="t-tiles"></div>
+      <div class="two-col">
+        <div><h3>Top hitters by WAR</h3><div class="chart" id="t-hitters"></div></div>
+        <div><h3>Top pitchers by WAR</h3><div class="chart" id="t-pitchers"></div></div>
+      </div>
+    </div>
+  </section>
 </div>
+
+<div id="tooltip"></div>
 
 <script>
 const API = "";
+const TEAM = {};        // code -> {team, name, league, division, color, logo_url}
+let TEAM_CODES = [];
+const cache = {};       // lazily loaded /stats/* payloads
 
 async function getJSON(url) {
   const res = await fetch(url);
-  if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || res.statusText);
   return res.json();
 }
 
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+}
 function fmtPct(x) { return (x * 100).toFixed(1) + "%"; }
 function fmtNum(x, d = 1) { return x === null || x === undefined ? "—" : Number(x).toFixed(d); }
+function fmtRate(x) { return x === null || x === undefined ? "—" : Number(x).toFixed(3).replace(/^0\./, "."); }
+function ordinal(n) { const s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+
+function logoImg(team, cls = "logo-sm") {
+  const t = TEAM[team];
+  if (!t) return "";
+  return `<img class="logo ${cls}" src="${t.logo_url}" alt="${esc(t.name)} logo" loading="lazy" onerror="this.style.visibility='hidden'">`;
+}
+
+/* ================= metric definitions ================= */
+// fmt: "rate" -> .345, number -> decimals. lower: lower is better. ref: fixed reference line.
+const PLAYER_METRICS = {
+  hitter: [
+    { key: "war", label: "WAR", fmt: 1, zero: true },
+    { key: "war_off", label: "Offensive WAR", fmt: 1, zero: true },
+    { key: "war_def", label: "Defensive WAR", fmt: 1, zero: true },
+    { key: "ops_plus", label: "OPS+", fmt: 0, ref: 100 },
+    { key: "xwoba", label: "xwOBA", fmt: "rate" },
+    { key: "woba", label: "wOBA", fmt: "rate" },
+    { key: "avg", label: "AVG", fmt: "rate" },
+    { key: "obp", label: "OBP", fmt: "rate" },
+    { key: "slg", label: "SLG", fmt: "rate" },
+    { key: "hard_hit_percent", label: "Hard-hit %", fmt: 1 },
+    { key: "barrel_percent", label: "Barrel %", fmt: 1 },
+    { key: "bb_percent", label: "BB %", fmt: 1 },
+    { key: "k_percent", label: "K %", fmt: 1, lower: true },
+    { key: "runs_bat", label: "Batting runs", fmt: 1, zero: true },
+    { key: "runs_field", label: "Fielding runs", fmt: 1, zero: true },
+    { key: "rbi", label: "RBI", fmt: 0 },
+    { key: "pa", label: "Plate appearances", fmt: 0 },
+  ],
+  pitcher: [
+    { key: "war", label: "WAR", fmt: 1, zero: true },
+    { key: "era_plus", label: "ERA+", fmt: 0, ref: 100 },
+    { key: "era", label: "ERA", fmt: 2, lower: true },
+    { key: "xwoba_against", label: "xwOBA against", fmt: "rate", lower: true },
+    { key: "k_percent", label: "K %", fmt: 1 },
+    { key: "bb_percent", label: "BB %", fmt: 1, lower: true },
+    { key: "whiff_percent", label: "Whiff %", fmt: 1 },
+    { key: "hard_hit_percent", label: "Hard-hit % allowed", fmt: 1, lower: true },
+    { key: "ip", label: "Innings pitched", fmt: 1 },
+    { key: "wins", label: "Wins", fmt: 0 },
+  ],
+};
+
+const TEAM_METRICS = [
+  { group: "Offense", key: "ops_plus", label: "Offensive rating (OPS+)", fmt: 1, ref: 100 },
+  { group: "Offense", key: "runs_per_game", label: "Runs per game", fmt: 2 },
+  { group: "Offense", key: "hitter_war", label: "Hitter WAR", fmt: 1, zero: true },
+  { group: "Offense", key: "offense_runs_above_avg", label: "Offensive runs above avg", fmt: 1, zero: true },
+  { group: "Offense", key: "ops", label: "OPS", fmt: "rate" },
+  { group: "Offense", key: "avg", label: "AVG", fmt: "rate" },
+  { group: "Offense", key: "obp", label: "OBP", fmt: "rate" },
+  { group: "Offense", key: "slg", label: "SLG", fmt: "rate" },
+  { group: "Offense", key: "home_runs", label: "Home runs", fmt: 0 },
+  { group: "Offense", key: "stolen_bases", label: "Stolen bases", fmt: 0 },
+  { group: "Offense", key: "bb_percent", label: "Walk %", fmt: 1 },
+  { group: "Offense", key: "k_percent", label: "Strikeout %", fmt: 1, lower: true },
+  { group: "Pitching", key: "era", label: "ERA", fmt: 2, lower: true },
+  { group: "Pitching", key: "pitcher_war", label: "Pitcher WAR", fmt: 1, zero: true },
+  { group: "Pitching", key: "runs_allowed_per_game", label: "Runs allowed per game", fmt: 2, lower: true },
+  { group: "Pitching", key: "whip", label: "WHIP", fmt: 2, lower: true },
+  { group: "Pitching", key: "k_per_9", label: "Strikeouts per 9", fmt: 1 },
+  { group: "Pitching", key: "bb_per_9", label: "Walks per 9", fmt: 1, lower: true },
+  { group: "Pitching", key: "hr_allowed", label: "Home runs allowed", fmt: 0, lower: true },
+  { group: "Overall", key: "win_pct", label: "Win %", fmt: "rate" },
+  { group: "Overall", key: "run_diff", label: "Run differential", fmt: 0, zero: true },
+  { group: "Overall", key: "total_war", label: "Total WAR", fmt: 1, zero: true },
+];
+
+function fmtMetric(m, v) {
+  if (v === null || v === undefined || Number.isNaN(v)) return "—";
+  return m.fmt === "rate" ? fmtRate(v) : fmtNum(v, m.fmt);
+}
+function metricOptions(list, selected) {
+  let html = "", group = null;
+  for (const m of list) {
+    if (m.group && m.group !== group) {
+      if (group) html += "</optgroup>";
+      html += `<optgroup label="${m.group}">`;
+      group = m.group;
+    }
+    html += `<option value="${m.key}"${m.key === selected ? " selected" : ""}>${m.label}</option>`;
+  }
+  return html + (group ? "</optgroup>" : "");
+}
+
+/* ================= tooltip ================= */
+const tooltip = document.getElementById("tooltip");
+function showTip(html, ev) {
+  tooltip.innerHTML = html;
+  tooltip.style.display = "block";
+  moveTip(ev);
+}
+function moveTip(ev) {
+  const pad = 14, r = tooltip.getBoundingClientRect();
+  let x = ev.clientX + pad, y = ev.clientY + pad;
+  if (x + r.width > window.innerWidth - 8) x = ev.clientX - r.width - pad;
+  if (y + r.height > window.innerHeight - 8) y = ev.clientY - r.height - pad;
+  tooltip.style.left = x + "px";
+  tooltip.style.top = y + "px";
+}
+function hideTip() { tooltip.style.display = "none"; }
+function tipRows(pairs) {
+  return pairs.map(([k, v]) => `<div class="tt-row"><span>${k}</span><b>${v}</b></div>`).join("");
+}
+
+/* ================= charts ================= */
+function niceTicks(lo, hi, count) {
+  const span = hi - lo || 1;
+  const raw = span / count, mag = Math.pow(10, Math.floor(Math.log10(raw))), norm = raw / mag;
+  const step = (norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10) * mag;
+  const ticks = [];
+  for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-6; v += step) ticks.push(+v.toFixed(10));
+  return ticks;
+}
+function domainFor(values, m, ref) {
+  let lo = Math.min(...values), hi = Math.max(...values);
+  if (ref !== undefined && ref !== null) { lo = Math.min(lo, ref); hi = Math.max(hi, ref); }
+  if (m.zero) { lo = Math.min(lo, 0); hi = Math.max(hi, 0); }
+  const pad = (hi - lo) * 0.06 || Math.abs(hi) * 0.1 || 1;
+  return [lo - pad, hi + pad];
+}
+function bindHits(el, rows, opt) {
+  el.querySelectorAll("[data-i]").forEach(node => {
+    const row = rows[+node.dataset.i];
+    node.addEventListener("mouseenter", ev => showTip(opt.tooltip(row), ev));
+    node.addEventListener("mousemove", moveTip);
+    node.addEventListener("mouseleave", hideTip);
+    if (opt.onClick) node.addEventListener("click", () => { hideTip(); opt.onClick(row); });
+  });
+}
+
+/* Ranked dot plot: one row per item, best on top, dot (or team logo) at its value. */
+function drawRanked(el, rows, opt) {
+  const m = opt.metric;
+  if (!rows.length) { el.innerHTML = `<div class="empty-note">${opt.empty || "No data for this selection."}</div>`; return; }
+  const W = Math.max(el.clientWidth, 280);
+  const narrow = W < 520;
+  const useLogoMarker = opt.marker === "logo";
+  const rowH = useLogoMarker ? 30 : 22;
+  const labelW = opt.labelWidth ?? (narrow ? 118 : 190);
+  const mg = { top: 26, right: 48, bottom: 8, left: labelW };
+  const H = mg.top + rows.length * rowH + mg.bottom;
+  const vals = rows.map(r => r[m.key]);
+  const [lo, hi] = domainFor(vals, m, m.ref);
+  const x = v => mg.left + (v - lo) / (hi - lo) * (W - mg.left - mg.right);
+  const base = m.ref ?? (lo < 0 && hi > 0 ? 0 : lo);
+  const maxChars = narrow ? 14 : 24;
+
+  let s = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="${esc(m.label)} dot plot">`;
+  for (const t of niceTicks(lo, hi, narrow ? 4 : 6)) {
+    s += `<line class="gridline" x1="${x(t)}" x2="${x(t)}" y1="${mg.top - 6}" y2="${H - mg.bottom}"/>`;
+    s += `<text class="dim" x="${x(t)}" y="${mg.top - 12}" text-anchor="middle">${fmtMetric(m, t)}</text>`;
+  }
+  if (m.ref !== undefined) {
+    s += `<line class="refline" x1="${x(m.ref)}" x2="${x(m.ref)}" y1="${mg.top - 6}" y2="${H - mg.bottom}"/>`;
+  }
+  rows.forEach((r, i) => {
+    const cy = mg.top + i * rowH + rowH / 2;
+    const v = r[m.key];
+    const name = opt.label(r);
+    const shown = name.length > maxChars ? name.slice(0, maxChars - 1) + "…" : name;
+    const logo = opt.logo ? opt.logo(r) : null;
+    s += `<g class="hit" data-i="${i}">`;
+    s += `<rect class="stripe-hover" x="0" y="${cy - rowH / 2}" width="${W}" height="${rowH}"/>`;
+    if (i % 2 === 1) s += `<rect class="stripe" x="0" y="${cy - rowH / 2}" width="${W}" height="${rowH}" pointer-events="none"/>`;
+    let tx = 4;
+    s += `<text class="dim" x="${tx}" y="${cy + 4}">${i + 1}</text>`;
+    tx += 22;
+    if (logo && !useLogoMarker) { s += `<image href="${logo}" x="${tx}" y="${cy - 8}" width="16" height="16"/>`; tx += 22; }
+    s += `<text x="${tx}" y="${cy + 4}">${esc(shown)}</text>`;
+    s += `<line class="stem" x1="${x(base)}" x2="${x(v)}" y1="${cy}" y2="${cy}"/>`;
+    if (useLogoMarker && logo) {
+      s += `<image href="${logo}" x="${x(v) - 13}" y="${cy - 13}" width="26" height="26"/>`;
+    } else {
+      s += `<circle cx="${x(v)}" cy="${cy}" r="6" fill="${opt.color ? opt.color(r) : "var(--accent)"}" stroke="var(--bg)" stroke-width="1.5"/>`;
+    }
+    const off = useLogoMarker ? 17 : 10;
+    const right = v >= base;
+    const vx = right ? x(v) + off : x(v) - off;
+    s += `<text class="dim" x="${vx}" y="${cy + 4}" text-anchor="${right ? "start" : "end"}">${fmtMetric(m, v)}</text>`;
+    s += `</g>`;
+  });
+  s += `</svg>`;
+  el.innerHTML = s;
+  bindHits(el, rows, opt);
+}
+
+/* Scatter: X vs Y. Axes flip for lower-is-better stats so up/right is always better. */
+function drawScatter(el, rows, opt) {
+  const mx = opt.xMetric, my = opt.yMetric;
+  if (!rows.length) { el.innerHTML = `<div class="empty-note">${opt.empty || "No data for this selection."}</div>`; return; }
+  const W = Math.max(el.clientWidth, 280);
+  const H = Math.round(Math.min(560, Math.max(320, W * 0.62)));
+  const mg = { top: 18, right: 22, bottom: 48, left: 60 };
+  const [xlo, xhi] = domainFor(rows.map(r => r[mx.key]), mx, mx.ref);
+  const [ylo, yhi] = domainFor(rows.map(r => r[my.key]), my, my.ref);
+  const pw = W - mg.left - mg.right, ph = H - mg.top - mg.bottom;
+  const x = v => mg.left + (mx.lower ? (xhi - v) : (v - xlo)) / (xhi - xlo) * pw;
+  const y = v => mg.top + (my.lower ? (v - ylo) : (yhi - v)) / (yhi - ylo) * ph;
+
+  let s = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="${esc(mx.label)} versus ${esc(my.label)}">`;
+  for (const t of niceTicks(xlo, xhi, W < 520 ? 4 : 7)) {
+    s += `<line class="gridline" x1="${x(t)}" x2="${x(t)}" y1="${mg.top}" y2="${mg.top + ph}"/>`;
+    s += `<text class="dim" x="${x(t)}" y="${mg.top + ph + 16}" text-anchor="middle">${fmtMetric(mx, t)}</text>`;
+  }
+  for (const t of niceTicks(ylo, yhi, 6)) {
+    s += `<line class="gridline" x1="${mg.left}" x2="${mg.left + pw}" y1="${y(t)}" y2="${y(t)}"/>`;
+    s += `<text class="dim" x="${mg.left - 8}" y="${y(t) + 4}" text-anchor="end">${fmtMetric(my, t)}</text>`;
+  }
+  const xRef = opt.xRef ?? mx.ref, yRef = opt.yRef ?? my.ref;
+  if (xRef !== undefined && xRef !== null) s += `<line class="refline" x1="${x(xRef)}" x2="${x(xRef)}" y1="${mg.top}" y2="${mg.top + ph}"/>`;
+  if (yRef !== undefined && yRef !== null) s += `<line class="refline" x1="${mg.left}" x2="${mg.left + pw}" y1="${y(yRef)}" y2="${y(yRef)}"/>`;
+  s += `<text class="dim" x="${mg.left + pw / 2}" y="${H - 8}" text-anchor="middle">${esc(mx.label)}${mx.lower ? " (lower is better)" : ""} →</text>`;
+  s += `<text class="dim" transform="translate(14 ${mg.top + ph / 2}) rotate(-90)" text-anchor="middle">${esc(my.label)}${my.lower ? " (lower is better)" : ""} →</text>`;
+
+  const placed = [];  // label boxes already drawn, so crowded points don't print on top of each other
+  const fitsLabel = (lx, ly, text) => {
+    const box = { x1: lx, x2: lx + text.length * 6.6, y1: ly - 11, y2: ly + 3 };
+    if (box.x2 > W) return false;
+    if (placed.some(b => box.x1 < b.x2 && box.x2 > b.x1 && box.y1 < b.y2 && box.y2 > b.y1)) return false;
+    placed.push(box);
+    return true;
+  };
+  const order = rows.map((r, i) => i);
+  if (opt.highlight) order.sort((a, b) => opt.highlight(rows[a]) - opt.highlight(rows[b]));
+  for (const i of order) {
+    const r = rows[i];
+    const cx = x(r[mx.key]), cy = y(r[my.key]);
+    s += `<g class="hit" data-i="${i}">`;
+    if (opt.marker === "logo") {
+      s += `<image href="${opt.logo(r)}" x="${cx - 14}" y="${cy - 14}" width="28" height="28"/>`;
+    } else {
+      const hl = opt.highlight ? opt.highlight(r) : true;
+      s += `<circle cx="${cx}" cy="${cy}" r="${hl ? 6 : 4.5}" fill="${hl ? "var(--accent)" : "var(--muted-dot)"}"
+               fill-opacity="${hl ? 0.95 : 0.55}" stroke="var(--bg)" stroke-width="1"/>`;
+      if (opt.highlight && hl && fitsLabel(cx + 9, cy + 4, opt.label(r))) s += `<text x="${cx + 9}" y="${cy + 4}">${esc(opt.label(r))}</text>`;
+    }
+    s += `</g>`;
+  }
+  s += `</svg>`;
+  el.innerHTML = s;
+  bindHits(el, rows, opt);
+}
+
+/* ================= tabs ================= */
+const tabLoaders = { players: renderPlayers, teams: renderTeams };
+function showTab(name) {
+  if (!document.getElementById(`tab-${name}`)) name = "predict";
+  document.querySelectorAll("section.tab").forEach(s => s.classList.toggle("active", s.id === `tab-${name}`));
+  document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+  if (location.hash !== `#${name}`) history.replaceState(null, "", `#${name}`);
+  if (tabLoaders[name]) tabLoaders[name]();
+}
+document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
+
+function segmented(id, onChange) {
+  const el = document.getElementById(id);
+  el.addEventListener("click", ev => {
+    const btn = ev.target.closest("button");
+    if (!btn) return;
+    el.querySelectorAll("button").forEach(b => b.classList.toggle("active", b === btn));
+    onChange(btn.dataset.v);
+  });
+  return () => el.querySelector("button.active").dataset.v;
+}
+
+async function loadStats(kind) {
+  if (!cache[kind]) cache[kind] = getJSON(`${API}/stats/${kind}`);
+  return cache[kind];
+}
+
+/* ================= predictions ================= */
+function renderSideHead(side) {
+  const team = document.getElementById(`${side}-team`).value;
+  const t = TEAM[team];
+  document.getElementById(`${side}-head`).innerHTML = t ? `
+    ${logoImg(team, "logo-lg")}
+    <div>
+      <div class="role">${side === "home" ? "Home" : "Away"}</div>
+      <div class="name">${esc(t.name)}</div>
+      <div class="sub">${esc(t.division)}</div>
+    </div>` : `<div class="role">${side}</div>`;
+}
 
 async function loadTeams() {
   const teams = await getJSON(`${API}/teams`);
   for (const sel of [document.getElementById("home-team"), document.getElementById("away-team")]) {
     sel.innerHTML = "";
-    for (const t of teams) {
+    for (const code of teams) {
       const opt = document.createElement("option");
-      opt.value = t; opt.textContent = t;
+      opt.value = code;
+      opt.textContent = TEAM[code] ? `${TEAM[code].name} (${code})` : code;
       sel.appendChild(opt);
     }
   }
   document.getElementById("home-team").value = "NYY";
   document.getElementById("away-team").value = "BOS";
+  renderSideHead("home");
+  renderSideHead("away");
 }
 
 async function loadRoster(side) {
@@ -209,10 +719,9 @@ async function loadRoster(side) {
     for (const h of roster.hitters) {
       const row = document.createElement("label");
       row.className = "hitter-row";
-      row.innerHTML = `<input type="checkbox" value="${h.player_id}"> ${h.name}`;
+      row.innerHTML = `<input type="checkbox" value="${esc(h.player_id)}"> ${esc(h.name)}`;
       hittersDiv.appendChild(row);
     }
-    hittersDiv.addEventListener("change", () => enforceHitterLimit(hittersDiv));
   } catch (e) {
     pitcherSel.innerHTML = `<option value="">(roster unavailable)</option>`;
   }
@@ -233,15 +742,21 @@ function selectedHitterIds(side) {
   return Array.from(container.querySelectorAll("input:checked")).map(cb => cb.value);
 }
 
-function renderProbBar(homeTeam, awayTeam, prob) {
-  document.getElementById("prob-title").textContent = `${homeTeam} vs ${awayTeam}`;
-  const bar = document.getElementById("prob-bar");
-  bar.innerHTML = `
-    <div class="seg-home" style="width:${prob * 100}%">${prob >= 0.12 ? fmtPct(prob) : ""}</div>
-    <div class="seg-away" style="width:${(1 - prob) * 100}%">${(1 - prob) >= 0.12 ? fmtPct(1 - prob) : ""}</div>
-  `;
-  document.getElementById("prob-home-label").textContent = `${homeTeam} (home)`;
-  document.getElementById("prob-away-label").textContent = `${awayTeam} (away)`;
+function renderProbBanner(homeTeam, awayTeam, prob, gameDate) {
+  const name = code => esc(TEAM[code]?.name ?? code);
+  document.getElementById("prob-banner").innerHTML = `
+    <div class="team home">
+      ${logoImg(homeTeam, "logo-xl")}
+      <div><div class="tag">Home</div><div class="name">${name(homeTeam)}</div><div class="pct">${fmtPct(prob)}</div></div>
+    </div>
+    <div class="mid">win probability<br>${esc(gameDate)}</div>
+    <div class="team away">
+      ${logoImg(awayTeam, "logo-xl")}
+      <div><div class="tag">Away</div><div class="name">${name(awayTeam)}</div><div class="pct">${fmtPct(1 - prob)}</div></div>
+    </div>`;
+  document.getElementById("prob-bar").innerHTML = `
+    <div class="seg-home" style="width:${prob * 100}%"></div>
+    <div class="seg-away" style="width:${(1 - prob) * 100}%"></div>`;
 }
 
 function statRow(label, value) {
@@ -249,7 +764,7 @@ function statRow(label, value) {
 }
 
 function renderTeamStats(side, team, teamStats, pitcherStats) {
-  document.getElementById(`${side}-stats-title`).textContent = team;
+  document.getElementById(`${side}-stats-title`).innerHTML = `${logoImg(team, "logo-md")} ${esc(TEAM[team]?.name ?? team)}`;
   let html = "";
   html += statRow("Recent win %", teamStats.win_pct_last10 !== null ? fmtPct(teamStats.win_pct_last10) : "—");
   html += statRow("Runs scored (L10 avg)", fmtNum(teamStats.runs_scored_last10));
@@ -268,7 +783,7 @@ function renderHitterCards(side, hitters) {
   if (!hitters.length) { el.innerHTML = ""; return; }
   el.innerHTML = hitters.map(h => `
     <div class="hitter-card">
-      <div class="name">${h.name}</div>
+      <div class="name">${esc(h.name)}</div>
       <div class="line">AVG ${fmtNum(h.avg, 3)} · SLG ${fmtNum(h.slg, 3)} · OBP ${fmtNum(h.obp, 3)} · RBI ${h.rbi} · Runs ${h.runs} · wOBA ${fmtNum(h.woba, 3)}</div>
     </div>
   `).join("");
@@ -310,7 +825,7 @@ async function predict() {
     }
     const data = await res.json();
 
-    renderProbBar(data.home_team, data.away_team, data.home_win_probability);
+    renderProbBanner(data.home_team, data.away_team, data.home_win_probability, data.game_date);
     renderTeamStats("home", data.home_team, data.home_team_stats, data.home_pitcher_stats);
     renderTeamStats("away", data.away_team, data.away_team_stats, data.away_pitcher_stats);
     renderHitterCards("home", data.home_hitter_stats);
@@ -334,11 +849,227 @@ function hideError() {
   document.getElementById("error").style.display = "none";
 }
 
-document.getElementById("home-team").addEventListener("change", () => loadRoster("home"));
-document.getElementById("away-team").addEventListener("change", () => loadRoster("away"));
+for (const side of ["home", "away"]) {
+  document.getElementById(`${side}-team`).addEventListener("change", () => { renderSideHead(side); loadRoster(side); });
+  const hittersDiv = document.getElementById(`${side}-hitters`);
+  hittersDiv.addEventListener("change", () => enforceHitterLimit(hittersDiv));
+}
 document.getElementById("predict-btn").addEventListener("click", predict);
 
+/* ================= players ================= */
+const MIN_DEFAULT = { hitter: 150, pitcher: 40 };
+const pState = { role: "hitter", view: "ranked", metric: { hitter: "war", pitcher: "war" }, x: { hitter: "ops_plus", pitcher: "k_percent" } };
+pState.getRole = segmented("p-role", v => { pState.role = v; syncPlayerControls(); renderPlayers(); });
+pState.getView = segmented("p-view", v => { pState.view = v; syncPlayerControls(); renderPlayers(); });
+
+function syncPlayerControls() {
+  const role = pState.role, list = PLAYER_METRICS[role], scatter = pState.view === "scatter";
+  document.getElementById("p-metric").innerHTML = metricOptions(list, pState.metric[role]);
+  document.getElementById("p-x").innerHTML = metricOptions(list, pState.x[role]);
+  document.getElementById("p-x-field").style.display = scatter ? "" : "none";
+  document.getElementById("p-top-field").style.display = scatter ? "none" : "";
+  document.getElementById("p-metric-label").textContent = scatter ? "Y axis" : "Stat";
+  document.getElementById("p-min-label").textContent = role === "hitter" ? "Min PA" : "Min IP";
+  document.getElementById("p-min").value = MIN_DEFAULT[role];
+}
+
+function playerTooltip(p) {
+  const t = TEAM[p.team];
+  const head = `<div class="tt-head">${logoImg(p.team)} ${esc(p.player_name)}</div>`;
+  const sub = `<div style="color:var(--text-dim);margin-bottom:4px">${esc(t?.name ?? p.team)} · age ${fmtNum(p.age, 0)}</div>`;
+  const rows = p.role === "hitter"
+    ? [["WAR", fmtNum(p.war)], ["OPS+", fmtNum(p.ops_plus, 0)], ["AVG / OBP / SLG", `${fmtRate(p.avg)} / ${fmtRate(p.obp)} / ${fmtRate(p.slg)}`],
+       ["xwOBA", fmtRate(p.xwoba)], ["Hard-hit %", fmtNum(p.hard_hit_percent)], ["PA", fmtNum(p.pa, 0)]]
+    : [["WAR", fmtNum(p.war)], ["ERA / ERA+", `${fmtNum(p.era, 2)} / ${fmtNum(p.era_plus, 0)}`], ["IP", fmtNum(p.ip)],
+       ["K% / BB%", `${fmtNum(p.k_percent)} / ${fmtNum(p.bb_percent)}`], ["Whiff %", fmtNum(p.whiff_percent)], ["xwOBA against", fmtRate(p.xwoba_against)]];
+  return head + sub + tipRows(rows);
+}
+
+async function renderPlayers() {
+  const chart = document.getElementById("p-chart");
+  let players;
+  try { players = await loadStats("players"); } catch (e) { chart.innerHTML = `<div class="empty-note">Couldn't load player stats: ${esc(e.message)}</div>`; return; }
+  if (!players.length) { chart.innerHTML = `<div class="empty-note">No player stats yet — run <code>python -m src.data.fetch_player_war</code>.</div>`; return; }
+
+  const role = pState.role;
+  const team = document.getElementById("p-team").value;
+  const minVal = Number(document.getElementById("p-min").value) || 0;
+  const volumeKey = role === "hitter" ? "pa" : "ip";
+  const metric = PLAYER_METRICS[role].find(m => m.key === pState.metric[role]);
+  const banner = document.getElementById("p-banner");
+
+  if (team) {
+    const t = TEAM[team];
+    banner.style.display = "flex";
+    banner.innerHTML = `${logoImg(team, "logo-lg")}<div><div class="name">${esc(t.name)}</div>
+      <div class="sub">${role === "hitter" ? "Hitters" : "Pitchers"} · ${esc(metric.label)}</div></div>`;
+  } else {
+    banner.style.display = "none";
+  }
+
+  const pool = players.filter(p => p.role === role && (p[volumeKey] ?? 0) >= minVal);
+
+  if (pState.view === "scatter") {
+    const xMetric = PLAYER_METRICS[role].find(m => m.key === pState.x[role]);
+    const rows = pool.filter(p => p[metric.key] !== null && p[xMetric.key] !== null);
+    drawScatter(chart, rows, {
+      xMetric, yMetric: metric, tooltip: playerTooltip, label: p => p.player_name,
+      highlight: team ? (p => p.team === team) : null,
+      empty: "No players with both stats at this minimum.",
+    });
+    return;
+  }
+
+  const sign = metric.lower ? 1 : -1;
+  let rows = pool.filter(p => p[metric.key] !== null && (!team || p.team === team));
+  rows.sort((a, b) => sign * (a[metric.key] - b[metric.key]));
+  if (!team) rows = rows.slice(0, Number(document.getElementById("p-top").value));
+  drawRanked(chart, rows, {
+    metric, label: p => p.player_name, logo: p => TEAM[p.team]?.logo_url, tooltip: playerTooltip,
+    empty: "No players qualify at this minimum — try lowering it.",
+  });
+}
+
+["p-team", "p-top"].forEach(id => document.getElementById(id).addEventListener("change", renderPlayers));
+document.getElementById("p-min").addEventListener("change", renderPlayers);
+document.getElementById("p-metric").addEventListener("change", e => { pState.metric[pState.role] = e.target.value; renderPlayers(); });
+document.getElementById("p-x").addEventListener("change", e => { pState.x[pState.role] = e.target.value; renderPlayers(); });
+
+/* ================= teams ================= */
+const tState = { view: "ranked", league: "", metric: "ops_plus", x: "ops_plus", scatterY: "era", selected: null };
+segmented("t-view", v => { tState.view = v; syncTeamControls(); renderTeams(); });
+segmented("t-league", v => { tState.league = v; renderTeams(); });
+
+function syncTeamControls() {
+  const scatter = tState.view === "scatter";
+  document.getElementById("t-metric").innerHTML = metricOptions(TEAM_METRICS, scatter ? tState.scatterY : tState.metric);
+  document.getElementById("t-x").innerHTML = metricOptions(TEAM_METRICS, tState.x);
+  document.getElementById("t-x-field").style.display = scatter ? "" : "none";
+  document.getElementById("t-metric-label").textContent = scatter ? "Y axis" : "Stat";
+}
+
+function withDerived(teams) {
+  return teams.map(t => ({ ...t, win_pct: t.wins / Math.max(1, t.wins + t.losses) }));
+}
+
+function teamTooltip(t) {
+  const meta = TEAM[t.team];
+  return `<div class="tt-head">${logoImg(t.team)} ${esc(meta?.name ?? t.team)}</div>
+    <div style="color:var(--text-dim);margin-bottom:4px">${t.wins}-${t.losses} · ${esc(meta?.division ?? "")}</div>` +
+    tipRows([["Offensive rating (OPS+)", fmtNum(t.ops_plus)], ["Runs / game", fmtNum(t.runs_per_game, 2)],
+             ["OPS", fmtRate(t.ops)], ["ERA", fmtNum(t.era, 2)], ["Run diff", (t.run_diff > 0 ? "+" : "") + t.run_diff],
+             ["Total WAR", fmtNum(t.total_war)]]);
+}
+
+function selectTeam(code) {
+  tState.selected = code;
+  document.getElementById("t-select").value = code;
+  renderTeamDetail();
+}
+
+async function renderTeams() {
+  const chart = document.getElementById("t-chart");
+  let teams;
+  try { teams = withDerived(await loadStats("teams")); } catch (e) { chart.innerHTML = `<div class="empty-note">Couldn't load team stats: ${esc(e.message)}</div>`; return; }
+  if (!teams.length) {
+    chart.innerHTML = `<div class="empty-note">No team stats yet — run <code>python -m src.data.fetch_team_stats</code>.</div>`;
+    document.getElementById("t-detail").style.display = "none";
+    return;
+  }
+  const shown = teams.filter(t => !tState.league || TEAM[t.team]?.league === tState.league);
+  const mean = key => teams.reduce((a, t) => a + t[key], 0) / teams.length;
+  const opts = { logo: t => TEAM[t.team]?.logo_url, tooltip: teamTooltip, onClick: t => selectTeam(t.team), marker: "logo" };
+
+  if (tState.view === "scatter") {
+    const xMetric = TEAM_METRICS.find(m => m.key === tState.x);
+    const yMetric = TEAM_METRICS.find(m => m.key === tState.scatterY);
+    drawScatter(chart, shown, { ...opts, xMetric, yMetric, xRef: xMetric.ref ?? mean(xMetric.key), yRef: yMetric.ref ?? mean(yMetric.key) });
+  } else {
+    const metric = TEAM_METRICS.find(m => m.key === tState.metric);
+    const sign = metric.lower ? 1 : -1;
+    const rows = [...shown].sort((a, b) => sign * (a[metric.key] - b[metric.key]));
+    drawRanked(chart, rows, { ...opts, metric: { ...metric, ref: metric.ref ?? mean(metric.key) }, label: t => TEAM[t.team]?.name ?? t.team });
+  }
+  if (!tState.selected) tState.selected = [...teams].sort((a, b) => b.ops_plus - a.ops_plus)[0].team;
+  renderTeamDetail();
+}
+
+async function renderTeamDetail() {
+  const code = tState.selected;
+  const teams = withDerived(await loadStats("teams"));
+  const t = teams.find(r => r.team === code);
+  if (!t) return;
+  const meta = TEAM[code];
+  document.getElementById("t-detail").style.display = "";
+  document.getElementById("t-select").value = code;
+
+  const divRank = [...teams].filter(r => TEAM[r.team]?.division === meta.division)
+    .sort((a, b) => b.win_pct - a.win_pct).findIndex(r => r.team === code) + 1;
+  document.getElementById("t-banner").innerHTML = `${logoImg(code, "logo-xl")}
+    <div><div class="name">${esc(meta.name)}</div>
+    <div class="sub">${t.wins}-${t.losses} · ${ordinal(divRank)} in ${esc(meta.division)} · run diff ${t.run_diff > 0 ? "+" : ""}${t.run_diff}</div></div>`;
+
+  const tileKeys = ["ops_plus", "runs_per_game", "hitter_war", "home_runs", "era", "pitcher_war", "whip", "total_war"];
+  document.getElementById("t-tiles").innerHTML = tileKeys.map(key => {
+    const m = TEAM_METRICS.find(x => x.key === key);
+    const sign = m.lower ? 1 : -1;
+    const rank = [...teams].sort((a, b) => sign * (a[key] - b[key])).findIndex(r => r.team === code) + 1;
+    return `<div class="tile"><div class="k">${esc(m.label)}</div><div class="v">${fmtMetric(m, t[key])}</div>
+      <div class="r">${ordinal(rank)} of ${teams.length}</div></div>`;
+  }).join("");
+
+  const players = await loadStats("players").catch(() => []);
+  const war = PLAYER_METRICS.hitter[0];
+  const top = (role, n) => players.filter(p => p.team === code && p.role === role && p.war !== null)
+    .sort((a, b) => b.war - a.war).slice(0, n);
+  const common = { metric: war, label: p => p.player_name, tooltip: playerTooltip, labelWidth: 150, empty: "No WAR data for this team." };
+  drawRanked(document.getElementById("t-hitters"), top("hitter", 10), common);
+  drawRanked(document.getElementById("t-pitchers"), top("pitcher", 10), common);
+}
+
+document.getElementById("t-metric").addEventListener("change", e => {
+  if (tState.view === "scatter") tState.scatterY = e.target.value; else tState.metric = e.target.value;
+  renderTeams();
+});
+document.getElementById("t-x").addEventListener("change", e => { tState.x = e.target.value; renderTeams(); });
+document.getElementById("t-select").addEventListener("change", e => selectTeam(e.target.value));
+document.getElementById("t-predict").addEventListener("click", () => {
+  const home = document.getElementById("home-team");
+  home.value = tState.selected;
+  if (document.getElementById("away-team").value === tState.selected) {
+    document.getElementById("away-team").value = TEAM_CODES.find(c => c !== tState.selected);
+    renderSideHead("away");
+    loadRoster("away");
+  }
+  renderSideHead("home");
+  loadRoster("home");
+  showTab("predict");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+/* ================= boot ================= */
+let resizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    const active = document.querySelector("nav.tabs button.active")?.dataset.tab;
+    if (tabLoaders[active]) tabLoaders[active]();
+  }, 150);
+});
+
 (async () => {
+  try {
+    for (const t of await getJSON(`${API}/teams/meta`)) TEAM[t.team] = t;
+  } catch (e) { /* logos are cosmetic — the rest of the UI still works without them */ }
+  TEAM_CODES = Object.keys(TEAM).sort((a, b) => TEAM[a].name.localeCompare(TEAM[b].name));
+
+  const teamOpts = TEAM_CODES.map(c => `<option value="${c}">${esc(TEAM[c].name)}</option>`).join("");
+  document.getElementById("p-team").innerHTML = `<option value="">All teams</option>` + teamOpts;
+  document.getElementById("t-select").innerHTML = teamOpts;
+  syncPlayerControls();
+  syncTeamControls();
+
+  showTab(location.hash.slice(1) || "predict");
   await loadTeams();
   await Promise.all([loadRoster("home"), loadRoster("away")]);
 })();
