@@ -50,9 +50,10 @@ ceiling is part of the point, not a caveat to hide.
    sportsbook closing-line implied probabilities as a near-efficient external
    baseline.
 6. **Deployment** — FastAPI endpoint (team names + date -> win probability)
-   with a small web UI (team/pitcher/hitter pickers, live-populated
-   dropdowns, a probability bar and stat comparison), containerized with
-   Docker.
+   with a three-tab web UI — **Predictions** (team/pitcher/hitter pickers and
+   a matchup card with both teams' logos), **Players** (WAR and other stats
+   as dot plots), and **Teams** (offensive rating and other team stats as
+   logo dot plots) — containerized with Docker.
 
 ## Results
 
@@ -158,9 +159,11 @@ project and the place embeddings had the most room to help.
 
 See [`config.yaml`](config.yaml) for paths/hyperparameters and the `src/`
 tree for pipeline stages: `data/` (`fetch.py` for schedules, `fetch_pitchers.py`
-for starters, `fetch_statcast_leaderboard.py` and `fetch_rosters.py` for
-live-API-only context — none of these three feed the model, `build_features.py`
-for the leakage-safe feature engineering that does), `models/` (Elo,
+for starters, `fetch_statcast_leaderboard.py`, `fetch_rosters.py`,
+`fetch_player_war.py`, and `fetch_team_stats.py` for live-API-only context —
+none of these feed the model, `teams.py` for static team metadata (names,
+logos, ballparks), `build_features.py` for the leakage-safe feature
+engineering that does), `models/` (Elo,
 baseline, GBM, PyTorch), `evaluation/` (metrics, walk-forward backtesting),
 `api/` (FastAPI serving + `static/index.html`, the web UI).
 
@@ -183,6 +186,8 @@ python scripts/evaluate.py                     # walk-forward comparison of all 
 python scripts/train.py                        # fits the production (logistic regression) model -> models/production_model.joblib
 python -m src.data.fetch_statcast_leaderboard  # optional: current-season pitcher+batter context for the API (informational only)
 python -m src.data.fetch_rosters               # optional: current team rosters, powers the web UI's dropdowns
+python -m src.data.fetch_player_war            # optional: current-season Baseball-Reference WAR -> Players tab
+python -m src.data.fetch_team_stats            # optional: current-season team stats (run after fetch_player_war) -> Teams tab
 ```
 
 Note: importing `torch` before `xgboost` matters in the same process on
@@ -195,10 +200,28 @@ gets this right.
 uvicorn src.api.main:app --reload
 ```
 
-Open `http://localhost:8000` for the web UI — pick a home/away team, optionally
-a starting pitcher and up to 3 hitters per side (populated live from each
-team's current roster via `GET /roster/{team}`), and hit Predict for the win
-probability plus a side-by-side stat comparison. Or hit the API directly:
+Open `http://localhost:8000` for the web UI. It has three tabs (each
+linkable: `#predict`, `#players`, `#teams`):
+
+- **Predictions** — pick an away/home team, optionally a starting pitcher and
+  up to 3 hitters per side (populated live from each team's current roster
+  via `GET /roster/{team}`), and hit Predict. A short "Calibrating…" progress
+  bar runs (held to a ~1.8s minimum so the result doesn't just flicker in),
+  then the win probability lands on a matchup card — dark split design with
+  each team's real logo fading in from its edge, adapted from a Figma Make
+  template — followed by a side-by-side stat comparison.
+- **Players** — every player's season line as a dot plot. *Leaderboard*
+  ranks players on one stat (WAR by default; OPS+, xwOBA, hard-hit %, ERA+,
+  whiff %, and more), each row tagged with the team logo. *Compare* plots any
+  two stats against each other, and picking a team highlights its players
+  against the league.
+- **Teams** — each team's logo is its dot. *Rankings* sorts teams on one
+  stat (offensive rating by default) against a league-average line;
+  *Compare* plots two stats, e.g. offense vs. ERA as quadrants. Click a logo
+  for that team's breakdown — record, stat tiles ranked 1–30, and its top
+  hitters and pitchers by WAR.
+
+Or hit the API directly:
 
 ```bash
 curl -X POST localhost:8000/predict -H "Content-Type: application/json" \
@@ -259,6 +282,28 @@ both pitcher and batter leaderboards). Batters were never a model input at
 all — no batter data anywhere in training — so this is purely additive
 display context, no substitution-risk reasoning needed.
 
+**Players and Teams tabs, same informational treatment.** `GET /stats/players`
+(filterable with `?role=hitter|pitcher` and `?team=NYY`) and `GET
+/stats/teams` serve current-season lines, and `GET /teams/meta` serves each
+team's name, division, ballpark, color, and logo URLs (MLB's own logo CDN,
+keyed by MLB team ID — nothing vendored). Sources:
+
+- **WAR / OPS+ / ERA+** — Baseball-Reference's public daily WAR files
+  (`python -m src.data.fetch_player_war`). That's bWAR, not FanGraphs' fWAR:
+  FanGraphs is behind a bot challenge here, same as the `pybaseball` scrape.
+  Traded players' stints are summed per player and credited to the right
+  team in the team totals.
+- **Team totals** — MLB's official Stats API (`python -m
+  src.data.fetch_team_stats`), joined with team WAR and OPS+ from the file
+  above. The UI's **offensive rating is team OPS+** — PA-weighted average of
+  the team's hitters' park-adjusted OPS+, 100 = league average — standing in
+  for wRC+, which is also FanGraphs-only.
+- Player contact-quality stats (xwOBA, hard-hit %, barrel %, whiff %) come
+  from the Statcast leaderboards above, joined by MLBAM ID.
+
+Like the Statcast context, these are season-to-date snapshots with no
+point-in-time history, so none of it is a model input.
+
 **Team/player dropdowns.** `GET /roster/{team}` (used by the web UI, and
 directly queryable) lists each team's current active pitchers and hitters
 by name, sourced from `python -m src.data.fetch_rosters` (MLB's official
@@ -279,11 +324,11 @@ with results matching the non-Docker run exactly. Final image is 1.95GB.
 
 The image bakes in `data/processed/game_log.csv`, `starters.csv`, and
 `models/production_model.joblib` (required — the build fails without them)
-plus `statcast_leaderboard.csv`, `statcast_batters.csv`, and `rosters.csv`
-if present (optional — the `COPY ... *` glob pattern in the Dockerfile means
-the build still succeeds without them; the API's pitcher/hitter_stats
-fields just stay null and `/roster/{team}` returns empty lists). All six
-are committed to git despite the general "processed data isn't versioned"
+plus `statcast_leaderboard.csv`, `statcast_batters.csv`, `rosters.csv`,
+`player_war.csv`, and `team_stats.csv` if present (optional — the `COPY ... *`
+glob pattern in the Dockerfile means the build still succeeds without them;
+the API's pitcher/hitter_stats fields just stay null, and `/roster/{team}`
+and `/stats/*` return empty lists). All eight are committed to git despite the general "processed data isn't versioned"
 policy elsewhere in this repo — see the `.gitignore` comment for why: a
 git-based build (Render, Docker Hub, anything that clones the repo rather
 than reading your local disk) needs them to actually be in the repo, and

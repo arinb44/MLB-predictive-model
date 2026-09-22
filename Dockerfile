@@ -26,16 +26,21 @@ COPY data/processed/game_log.csv data/processed/game_log.csv
 COPY data/processed/starters.csv data/processed/starters.csv
 COPY models/production_model.joblib models/production_model.joblib
 
-# Optional — informational-only Statcast pitcher/batter stats and the web
-# UI's team-roster dropdowns (see src/api/main.py, fetch_statcast_leaderboard.py,
-# fetch_rosters.py). The API starts fine without these (pitcher/hitter_stats
-# fields stay null, /roster/{team} returns empty lists). The trailing `*`
-# makes each an optional glob copy — unlike an exact filename, Docker
-# doesn't fail the build if nothing matches. Refresh with:
+# Optional — informational-only Statcast pitcher/batter stats, the web
+# UI's team-roster dropdowns, and the Players/Teams tabs' season stats (see
+# src/api/main.py, fetch_statcast_leaderboard.py, fetch_rosters.py,
+# fetch_player_war.py, fetch_team_stats.py). The API starts fine without
+# these (pitcher/hitter_stats fields stay null, /roster/{team} and
+# /stats/* return empty lists). The trailing `*` makes each an optional glob
+# copy — unlike an exact filename, Docker doesn't fail the build if nothing
+# matches. Refresh with:
 #   python -m src.data.fetch_statcast_leaderboard && python -m src.data.fetch_rosters
+#   python -m src.data.fetch_player_war && python -m src.data.fetch_team_stats
 COPY data/processed/statcast_leaderboard.csv* data/processed/
 COPY data/processed/statcast_batters.csv* data/processed/
 COPY data/processed/rosters.csv* data/processed/
+COPY data/processed/player_war.csv* data/processed/
+COPY data/processed/team_stats.csv* data/processed/
 
 EXPOSE 8000
 CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
