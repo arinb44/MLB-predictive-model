@@ -132,3 +132,38 @@ def test_hitter_selection_does_not_change_win_probability(client):
 
     assert without_hitters.json()["home_win_probability"] == with_hitters.json()["home_win_probability"]
     assert len(with_hitters.json()["home_hitter_stats"]) == 1
+
+
+def test_teams_meta_covers_every_team_with_a_logo(client):
+    resp = client.get("/teams/meta")
+    assert resp.status_code == 200
+    meta = resp.json()
+    assert {m["team"] for m in meta} == set(client.get("/teams").json())
+    for m in meta:
+        assert m["logo_url"].startswith("https://www.mlbstatic.com/team-logos/")
+
+
+def test_player_stats_filters_by_role_and_team(client):
+    if not Path("data/processed/player_war.csv").exists():
+        pytest.skip("player_war.csv not built — run src.data.fetch_player_war")
+    resp = client.get("/stats/players", params={"role": "hitter", "team": "NYY"})
+    assert resp.status_code == 200
+    players = resp.json()
+    assert players
+    assert all(p["role"] == "hitter" and p["team"] == "NYY" for p in players)
+    assert all(p["ip"] is None for p in players)
+
+
+def test_player_stats_rejects_bad_filters(client):
+    assert client.get("/stats/players", params={"role": "catcher"}).status_code == 400
+    assert client.get("/stats/players", params={"team": "ZZZ"}).status_code == 400
+
+
+def test_team_stats_has_all_30_teams(client):
+    if not Path("data/processed/team_stats.csv").exists():
+        pytest.skip("team_stats.csv not built — run src.data.fetch_team_stats")
+    resp = client.get("/stats/teams")
+    assert resp.status_code == 200
+    rows = resp.json()
+    assert len(rows) == 30
+    assert {r["team"] for r in rows} == set(client.get("/teams").json())

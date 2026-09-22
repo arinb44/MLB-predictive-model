@@ -45,6 +45,7 @@ from pydantic import BaseModel, Field
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.data.build_features import add_starter_features, build_game_features, merge_elo_features  # noqa: E402
+from src.data.teams import TEAMS, logo_url  # noqa: E402
 from src.models.elo import compute_elo_ratings  # noqa: E402
 
 _state: dict = {}
@@ -94,6 +95,52 @@ def load_artifacts() -> None:
         _state["rosters"] = pd.read_csv(rosters_path)
     else:
         _state["rosters"] = pd.DataFrame(columns=["team", "player_id", "player_name", "is_pitcher"])
+
+    # Optional: informational-only season stats for the UI's Players/Teams
+    # views (fetch_player_war.py, fetch_team_stats.py). Missing files mean
+    # /stats/players and /stats/teams return empty lists.
+    _state["player_stats"] = _build_player_stats(processed_dir)
+    team_stats_path = processed_dir / "team_stats.csv"
+    _state["team_stats"] = pd.read_csv(team_stats_path) if team_stats_path.exists() else pd.DataFrame()
+
+
+# Statcast leaderboard column -> player stats field, joined onto the WAR rows
+# by MLBAM ID so the Players view can plot contact quality next to WAR.
+_STATCAST_HITTER_COLS = {
+    "batting_avg": "avg", "on_base_percent": "obp", "slg_percent": "slg", "b_rbi": "rbi", "r_run": "runs",
+    "woba": "woba", "xwoba": "xwoba", "k_percent": "k_percent", "bb_percent": "bb_percent",
+    "hard_hit_percent": "hard_hit_percent", "barrel_batted_rate": "barrel_percent",
+}
+_STATCAST_PITCHER_COLS = {
+    "p_era": "era", "p_win": "wins", "p_loss": "losses", "xwoba": "xwoba_against",
+    "k_percent": "k_percent", "bb_percent": "bb_percent", "whiff_percent": "whiff_percent",
+    "hard_hit_percent": "hard_hit_percent", "barrel_batted_rate": "barrel_percent",
+}
+
+
+def _build_player_stats(processed_dir: Path) -> pd.DataFrame:
+    war_path = processed_dir / "player_war.csv"
+    if not war_path.exists():
+        return pd.DataFrame()
+    war = pd.read_csv(war_path)
+    parts = []
+    for role, filename, cols in (
+        ("hitter", "statcast_batters.csv", _STATCAST_HITTER_COLS),
+        ("pitcher", "statcast_leaderboard.csv", _STATCAST_PITCHER_COLS),
+    ):
+        part = war[war["role"] == role]
+        statcast_path = processed_dir / filename
+        if statcast_path.exists():
+            statcast = pd.read_csv(statcast_path)[["key_mlbam", *cols]].rename(columns=cols)
+            statcast = statcast.drop_duplicates("key_mlbam").rename(columns={"key_mlbam": "mlb_id"})
+            part = part.merge(statcast, on="mlb_id", how="left")
+        parts.append(part)
+    return pd.concat(parts, ignore_index=True)
+
+
+def _records(df: pd.DataFrame) -> list[dict]:
+    """DataFrame rows as dicts with NaN -> None, so they serialize as JSON null."""
+    return df.astype(object).where(df.notna(), None).to_dict(orient="records")
 
 
 @asynccontextmanager
@@ -318,6 +365,120 @@ def roster(team: str) -> RosterResponse:
         pitchers=[RosterPlayer(player_id=r.player_id, name=r.player_name) for r in pitchers.itertuples()],
         hitters=[RosterPlayer(player_id=r.player_id, name=r.player_name) for r in hitters.itertuples()],
     )
+
+
+class TeamMeta(BaseModel):
+    team: str
+    name: str
+    league: str
+    division: str
+    color: str
+    logo_url: str
+
+
+class PlayerStatLine(BaseModel):
+    """One player's season line for the Players view. Hitter-only fields are
+    null for pitchers and vice versa; Statcast fields are null when the
+    player isn't on that leaderboard. Informational only — never a model input."""
+    mlb_id: int
+    player_name: str
+    role: str
+    team: str
+    age: Optional[float] = None
+    war: Optional[float] = None
+    games: Optional[int] = None
+    # hitters (Baseball-Reference)
+    war_off: Optional[float] = None
+    war_def: Optional[float] = None
+    pa: Optional[int] = None
+    ops_plus: Optional[float] = None
+    runs_bat: Optional[float] = None
+    runs_field: Optional[float] = None
+    # hitters (Statcast)
+    avg: Optional[float] = None
+    obp: Optional[float] = None
+    slg: Optional[float] = None
+    rbi: Optional[int] = None
+    runs: Optional[int] = None
+    woba: Optional[float] = None
+    xwoba: Optional[float] = None
+    # pitchers (Baseball-Reference)
+    games_started: Optional[int] = None
+    ip: Optional[float] = None
+    era_plus: Optional[float] = None
+    # pitchers (Statcast)
+    era: Optional[float] = None
+    wins: Optional[int] = None
+    losses: Optional[int] = None
+    xwoba_against: Optional[float] = None
+    whiff_percent: Optional[float] = None
+    # both roles (Statcast)
+    k_percent: Optional[float] = None
+    bb_percent: Optional[float] = None
+    hard_hit_percent: Optional[float] = None
+    barrel_percent: Optional[float] = None
+
+
+class TeamStatLine(BaseModel):
+    """One team's season line for the Teams view. `ops_plus` is the UI's
+    "offensive rating" (see fetch_team_stats.py). Informational only."""
+    team: str
+    games: int
+    wins: int
+    losses: int
+    runs: int
+    runs_allowed: int
+    runs_per_game: float
+    runs_allowed_per_game: float
+    run_diff: int
+    avg: float
+    obp: float
+    slg: float
+    ops: float
+    home_runs: int
+    stolen_bases: int
+    k_percent: float
+    bb_percent: float
+    era: float
+    whip: float
+    k_per_9: float
+    bb_per_9: float
+    hr_allowed: int
+    ops_plus: Optional[float] = None
+    hitter_war: Optional[float] = None
+    pitcher_war: Optional[float] = None
+    total_war: Optional[float] = None
+    offense_runs_above_avg: Optional[float] = None
+
+
+@app.get("/teams/meta", response_model=List[TeamMeta])
+def teams_meta() -> List[TeamMeta]:
+    return [
+        TeamMeta(team=code, name=meta["name"], league=meta["league"], division=meta["division"],
+                 color=meta["color"], logo_url=logo_url(code))
+        for code, meta in sorted(TEAMS.items())
+    ]
+
+
+@app.get("/stats/players", response_model=List[PlayerStatLine])
+def player_stats(role: Optional[str] = None, team: Optional[str] = None) -> List[PlayerStatLine]:
+    if role is not None and role not in ("hitter", "pitcher"):
+        raise HTTPException(status_code=400, detail="role must be 'hitter' or 'pitcher'")
+    if team is not None and team not in TEAMS:
+        raise HTTPException(status_code=400, detail=f"Unknown team code: {team!r}")
+    df = _state["player_stats"]
+    if df.empty:
+        return []
+    if role is not None:
+        df = df[df["role"] == role]
+    if team is not None:
+        df = df[df["team"] == team]
+    return [PlayerStatLine(**r) for r in _records(df)]
+
+
+@app.get("/stats/teams", response_model=List[TeamStatLine])
+def team_stats() -> List[TeamStatLine]:
+    return [TeamStatLine(**r) for r in _records(_state["team_stats"])]
 
 
 @app.get("/health")
