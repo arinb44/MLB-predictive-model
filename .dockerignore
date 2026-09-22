@@ -15,6 +15,8 @@ data/processed/*
 !data/processed/statcast_leaderboard.csv
 !data/processed/statcast_batters.csv
 !data/processed/rosters.csv
+!data/processed/player_war.csv
+!data/processed/team_stats.csv
 models/*
 !models/production_model.joblib
 *.md
