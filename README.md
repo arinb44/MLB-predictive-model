@@ -1,5 +1,8 @@
 # MLB Game Outcome Predictor
 
+**[Live demo →](https://mlb-game-predictor-sdt8.onrender.com)** (free-tier
+hosting — the first request after ~15 min idle takes 30-60s to wake up)
+
 Predicts the home team's win probability for a given MLB game, using only
 information available before first pitch (no in-game or post-game leakage).
 
