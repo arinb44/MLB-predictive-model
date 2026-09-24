@@ -146,9 +146,11 @@
     background: linear-gradient(90deg, var(--accent), #7af0c4, var(--accent));
     background-size: 200% 100%; animation: calib-shimmer 1.1s linear infinite;
   }
-  .calib-label {
-    margin-top: 8px; font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-size: 0.9rem;
-    letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim);
+  /* Screen-reader-only: the bar itself is the visual cue, but a status
+     region still needs text for assistive tech to announce. */
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
   }
   @keyframes calib-shimmer { from { background-position: 200% 0; } to { background-position: 0 0; } }
 
@@ -327,7 +329,7 @@
 
     <div id="calibrating" role="status" aria-live="polite">
       <div class="calib-track"><div class="calib-fill" id="calib-fill"></div></div>
-      <div class="calib-label">Calibrating…</div>
+      <div class="sr-only">Calibrating…</div>
     </div>
     <div id="error"></div>
 
