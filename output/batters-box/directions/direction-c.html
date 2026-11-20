@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en" data-type="software" data-radius="sharp">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="page-type" content="software">
+<meta name="site-kind" content="software">
+<title>Direction C — Field Chalk · Full Count</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Work+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DIRECTION C — "FIELD CHALK"
+   The quiet one: a diagram, not a dashboard. Warm ground,
+   chalk lines, a faded accent, serif display, lots of air.
+   No panels anywhere — type sits on the ground.
+   ============================================================ */
+:root {
+  --ground:  #1b1714;
+  --panel:   #241f1a;
+  --rule:    #3a3129;
+  --text:    #f4ece1;
+  --muted:   #b0a292;
+  --chalk:   #ded2c0;
+  --accent:  #8fbfa8;   /* faded outfield chalk */
+
+  --display: "Fraunces", Georgia, serif;
+  --body:    "Work Sans", system-ui, sans-serif;
+
+  --s1: 4px; --s2: 8px; --s3: 14px; --s4: 20px; --s5: 32px; --s6: 52px;
+  --pad: 44px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--ground);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 var(--pad); }
+a { color: inherit; text-decoration: none; }
+
+/* ---------- masthead ---------- */
+.masthead { padding: var(--s5) 0 var(--s4); }
+.mark {
+  font-family: var(--display); font-weight: 600; font-size: 19px;
+  letter-spacing: 0.02em; color: var(--accent); margin-bottom: var(--s5);
+}
+.head-row { display: grid; grid-template-columns: minmax(0,1fr) 290px; gap: var(--s6); align-items: start; }
+h1 {
+  font-family: var(--display); font-weight: 400;
+  font-size: clamp(34px, 4.4vw, 56px); line-height: 1.08;
+  letter-spacing: -0.015em; margin: 0 0 var(--s4); max-width: 18ch;
+}
+.lede { color: var(--muted); margin: 0; max-width: 54ch; font-size: 16px; }
+.today { border-left: 2px solid var(--accent); padding: var(--s1) 0 var(--s1) var(--s4); }
+.today h2 {
+  font-family: var(--body); font-weight: 500; font-size: 11px;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent);
+  margin: 0 0 var(--s2);
+}
+.today p { margin: 0; color: var(--muted); font-size: 15px; }
+.today b { color: var(--text); font-weight: 500; }
+
+/* ---------- the box ---------- */
+.cue {
+  font-family: var(--body); font-weight: 500; font-size: 11px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--muted);
+  border-top: 1px solid var(--rule); padding-top: var(--s3); margin: 0 0 var(--s4);
+}
+.box { display: grid; grid-template-columns: 470px minmax(0,1fr); gap: var(--s6); align-items: center; padding-bottom: var(--s6); }
+.plate { margin: 0; }
+.plate svg { display: block; width: 100%; height: auto; }
+
+/* chalk diagram: one thin rectangle, no inner grid */
+.z-edge   { fill: none; stroke: var(--chalk); stroke-width: 1.25; opacity: .8; }
+.z-ground { stroke: var(--rule); stroke-width: 1; }
+.plate-shape { fill: none; stroke: var(--chalk); stroke-width: 1.25; opacity: .5; }
+.b-limb { stroke: var(--chalk); opacity: 0.26; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.b-head, .b-bat-shape, .b-bat-knob { fill: var(--chalk); opacity: 0.26; }
+
+.mark-lead { stroke: var(--rule); stroke-width: 1; fill: none; }
+.mark-dot  { fill: var(--ground); stroke: var(--accent); stroke-width: 1.5; transition: fill .2s; }
+.mark-num  { fill: var(--accent); font-family: var(--display); font-weight: 600; font-size: 15px; text-anchor: middle; transition: fill .2s; }
+
+/* ---------- the pitch list: type on the ground, no panels ---------- */
+.pitches { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; column-gap: var(--s6); row-gap: var(--s5); }
+.pitches a {
+  display: block; height: 100%; padding-top: var(--s3);
+  border-top: 1px solid var(--rule);
+  transition: border-top-color .2s, transform .2s;
+}
+.p-top { display: flex; align-items: baseline; gap: var(--s3); margin-bottom: var(--s1); }
+.p-num { font-family: var(--display); font-weight: 600; font-size: 15px; color: var(--accent);  font-variant-numeric: tabular-nums; }
+.p-kind {
+  font-family: var(--body); font-weight: 500; font-size: 10px;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted);
+}
+.p-name {
+  font-family: var(--display); font-weight: 400; font-size: 29px; line-height: 1.12;
+  display: block; letter-spacing: -0.015em;
+}
+.p-desc { color: var(--muted); font-size: 14px; margin: var(--s2) 0 0; max-width: 34ch; }
+
+.pitches a:hover, .pitches a:focus-visible { border-top-color: var(--accent); transform: translateY(-2px); outline: none; }
+.pitches a:hover .p-name, .pitches a:focus-visible .p-name { color: var(--accent); }
+.pitches a:focus-visible { box-shadow: 0 2px 0 0 var(--accent); }
+
+.box:has(a[data-p="1"]:hover) #m1 .mark-dot, .box:has(a[data-p="1"]:focus-visible) #m1 .mark-dot,
+.box:has(a[data-p="2"]:hover) #m2 .mark-dot, .box:has(a[data-p="2"]:focus-visible) #m2 .mark-dot,
+.box:has(a[data-p="3"]:hover) #m3 .mark-dot, .box:has(a[data-p="3"]:focus-visible) #m3 .mark-dot,
+.box:has(a[data-p="4"]:hover) #m4 .mark-dot, .box:has(a[data-p="4"]:focus-visible) #m4 .mark-dot,
+.box:has(a[data-p="5"]:hover) #m5 .mark-dot, .box:has(a[data-p="5"]:focus-visible) #m5 .mark-dot,
+.box:has(a[data-p="6"]:hover) #m6 .mark-dot, .box:has(a[data-p="6"]:focus-visible) #m6 .mark-dot { fill: var(--accent); }
+.box:has(a[data-p="1"]:hover) #m1 .mark-num, .box:has(a[data-p="2"]:hover) #m2 .mark-num,
+.box:has(a[data-p="3"]:hover) #m3 .mark-num, .box:has(a[data-p="4"]:hover) #m4 .mark-num,
+.box:has(a[data-p="5"]:hover) #m5 .mark-num, .box:has(a[data-p="6"]:hover) #m6 .mark-num { fill: var(--ground); }
+
+footer { border-top: 1px solid var(--rule); padding: var(--s4) 0 var(--s5); }
+footer p { margin: 0; color: var(--muted); font-size: 13px; }
+
+@media (max-width: 1024px) {
+  .head-row { grid-template-columns: minmax(0,1fr); gap: var(--s4); }
+  .today { max-width: 420px; }
+  .box { grid-template-columns: 350px minmax(0,1fr); gap: var(--s5); }
+}
+@media (max-width: 820px) {
+  :root { --pad: 24px; }
+  .box { grid-template-columns: minmax(0,1fr); }
+  .plate { max-width: 440px; }
+}
+@media (max-width: 560px) { .pitches { grid-template-columns: 1fr; row-gap: var(--s4); } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="mark">Full Count</div>
+    <div class="head-row">
+      <div>
+        <h1>Win probabilities for every MLB game</h1>
+        <p class="lede">
+          Pick two teams and a date and get a calibrated number — not a pick, a probability.
+          Thirty teams, 2,430 games a season, one number each.
+        </p>
+      </div>
+      <!-- STATUS BOX: content is real (the model's own feature set), not live data -->
+      <aside class="today">
+        <h2>What drives the number</h2>
+        <p><b>Team form</b>, <b>Elo</b> and a <b>trailing starter proxy</b>. Everything else on this site is context, and says so.</p>
+      </aside>
+    </div>
+  </header>
+
+  <main>
+    <p class="cue">Every section is a pitch</p>
+
+    <div class="box">
+      <figure class="plate">
+        <svg viewBox="14 14 400 392" role="img" aria-label="A batter at the plate in front of the strike zone, with six numbered pitches in and around it.">
+          <g class="batter">
+            <polygon class="b-bat-shape" points="80.5,121.9 87.5,118.1 42.2,26.7 29.8,33.3"/>
+            <circle class="b-bat-knob" cx="85" cy="123" r="5.5"/>
+            <g class="b-head"><circle cx="112" cy="88" r="21"/><path d="M128 84 L159 91 L150 101 L126 101 Z"/></g>
+            <path class="b-limb" d="M112 116 L117 198" stroke-width="32"/>
+            <path class="b-limb" d="M117 198 L93 272 L76 334" stroke-width="17"/>
+            <path class="b-limb" d="M117 198 L157 264 L163 336" stroke-width="17"/>
+            <path class="b-limb" d="M76 334 L56 340" stroke-width="13"/>
+            <path class="b-limb" d="M163 336 L185 342" stroke-width="13"/>
+            <path class="b-limb" d="M113 128 L92 146 L85 122" stroke-width="15"/>
+          </g>
+          <line class="z-ground" x1="20" y1="352" x2="400" y2="352"/>
+          <path class="plate-shape" d="M232 366 L318 366 L318 382 L275 396 L232 382 Z"/>
+          <rect class="z-edge" x="216" y="152" width="120" height="156"/>
+
+          <!-- leader lines run out to the right, toward the list -->
+          <g id="m1"><path class="mark-lead" d="M288 230 L404 230"/><circle class="mark-dot" cx="276" cy="230" r="13"/><text class="mark-num" x="276" y="235">1</text></g>
+          <g id="m2"><path class="mark-lead" d="M343 296 L404 296"/><circle class="mark-dot" cx="330" cy="296" r="13"/><text class="mark-num" x="330" y="301">2</text></g>
+          <g id="m3"><path class="mark-lead" d="M261 172 L404 172"/><circle class="mark-dot" cx="248" cy="172" r="13"/><text class="mark-num" x="248" y="177">3</text></g>
+          <g id="m4"><path class="mark-lead" d="M301 334 L404 334"/><circle class="mark-dot" cx="288" cy="334" r="13"/><text class="mark-num" x="288" y="339">4</text></g>
+          <g id="m5"><path class="mark-lead" d="M247 286 L404 286"/><circle class="mark-dot" cx="234" cy="286" r="13"/><text class="mark-num" x="234" y="291">5</text></g>
+          <g id="m6"><path class="mark-lead" d="M209 186 L404 186"/><circle class="mark-dot" cx="196" cy="186" r="13"/><text class="mark-num" x="196" y="191">6</text></g>
+        </svg>
+      </figure>
+
+      <ol class="pitches">
+        <li><a href="#" data-p="1"><span class="p-top"><span class="p-num">1</span><span class="p-kind">Four-seam fastball</span></span><span class="p-name">Predictions</span><span class="p-desc">Two teams, a date, a calibrated win probability.</span></a></li>
+        <li><a href="#" data-p="2"><span class="p-top"><span class="p-num">2</span><span class="p-kind">Slider</span></span><span class="p-name">Players</span><span class="p-desc">Every hitter and pitcher, ranked or compared.</span></a></li>
+        <li><a href="#" data-p="3"><span class="p-top"><span class="p-num">3</span><span class="p-kind">Curveball</span></span><span class="p-name">Teams</span><span class="p-desc">Thirty teams by offense, pitching and run differential.</span></a></li>
+        <li><a href="#" data-p="4"><span class="p-top"><span class="p-num">4</span><span class="p-kind">Changeup</span></span><span class="p-name">Model</span><span class="p-desc">What actually moves the number, feature by feature.</span></a></li>
+        <li><a href="#" data-p="5"><span class="p-top"><span class="p-num">5</span><span class="p-kind">Sinker</span></span><span class="p-name">Matchups</span><span class="p-desc">Head to head, and how the two sides line up.</span></a></li>
+        <li><a href="#" data-p="6"><span class="p-top"><span class="p-num">6</span><span class="p-kind">Cutter</span></span><span class="p-name">About the data</span><span class="p-desc">Where every stat comes from, and what the model ignores.</span></a></li>
+      </ol>
+    </div>
+  </main>
+
+  <footer>
+    <p>Stats from the MLB Stats API, Baseball-Reference and Baseball Savant. Season to date.</p>
+  </footer>
+
+</div>
+</body>
+</html>

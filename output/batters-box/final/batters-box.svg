@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Full Count - the batter's box, as inlined in index.html.
+     Umpire's view: the hitter's back is to us, legs stacked front-to-back.
+     Rig: .b-body turns and sits down with the hips, .b-swing turns the
+     shoulders about the spine, .b-arc drops the barrel into the slot and
+     through the zone, .b-reach plus the two #arm-* paths extend the arms,
+     .bat-trail draws the barrel arc behind it, .contact-burst is parented
+     to the bat so it fires on the barrel, and each ball carries a .call-out
+     that reads Strike when the swing misses.
+     Balls are hidden until a pitch is thrown. Colours come from the page CSS. -->
+<svg viewBox="12 20 350 360" role="img" aria-label="A right-handed batter in the box beside home plate. The strike zone is drawn as a three-by-three grid from the letters to the knees, with six numbered pitches: one down the middle, one upper third, one low inside, one on the low outside corner, one off the plate up and in, and one in the dirt.">
+          <!-- the batter's box, in chalk, under the batter's feet -->
+          <path class="z-chalk" d="M36 326 L196 326 L214 372 L18 372 Z"/>
+
+          <!-- batter: a filled silhouette, in profile, facing the zone.
+               The body stays put; .b-swing (arms + bat) rotates about the
+               shoulder when a pitch is thrown. -->
+          <g class="batter">
+            <g class="b-body b-dim">
+              <!-- umpire's view: his back is to us, head turned to pick the ball up -->
+              <path class="b-fill" d="M100 74 C100 55 110 45 123 45 C137 45 147 56 147 74 C147 88 140 97 130 99 L114 99 C104 97 100 86 100 74 Z"/>
+              <path class="b-fill" d="M143 68 C152 67 162 70 164 75 C162 80 151 82 142 80 Z"/>
+              <path class="b-fill" d="M112 95 L134 95 L138 116 L110 116 Z"/>
+              <path class="b-fill" d="M100 116 C94 128 92 148 96 168 C98 182 100 192 102 202 L146 202 C148 190 151 176 153 160 C156 140 152 126 146 114 Z"/>
+              <!-- the stance runs toward the pitcher, so from behind the legs
+                   stack front-to-back: the far one peeks out past the near one -->
+              <path class="b-stroke" d="M133 200 L139 252" stroke-width="26"/>
+              <path class="b-stroke" d="M139 252 L143 310" stroke-width="19"/>
+              <path class="b-fill" d="M134 306 L160 304 C170 310 174 320 172 326 L132 326 Z"/>
+              <path class="b-stroke" d="M118 202 L113 254" stroke-width="29"/>
+              <path class="b-stroke" d="M113 254 L108 316" stroke-width="21"/>
+              <path class="b-fill" d="M92 314 L122 316 L124 332 L86 332 C86 323 88 315 92 314 Z"/>
+            </g>
+            <g class="b-swing">
+              <!-- the arc the barrel travels, drawn in behind it so the path
+                   is readable at speed. Centre (123,120), r110, the same
+                   circle the barrel tip rides. -->
+              <path class="bat-trail" d="M70.5 23.3 A110 110 0 1 0 232.9 115.2"/>
+              <g class="b-arc">
+                <!-- .b-swing turns about the spine (hips and shoulders opening);
+                     .b-arc drops the bat through the zone -->
+                <g class="b-dim">
+                  <!-- the elbows straighten through contact; .b-reach carries the
+                       hands and the bat out with them -->
+                  <path class="b-stroke b-arm" id="arm-back" d="M108 118 L100 134 L94 102" stroke-width="15"/>
+                  <path class="b-stroke b-arm" id="arm-front" d="M140 120 L130 136 L98 106" stroke-width="15"/>
+                </g>
+                <g class="b-reach">
+                  <circle class="b-fill b-dim" cx="96" cy="102" r="8"/>
+                  <!-- the bat sits in front of the body at full strength, and the
+                       barrel is its own colour so you can follow it through -->
+                  <polygon class="bat-handle" points="92.4,104.7 99.6,99.3 79.1,66.5 68.8,73.6"/>
+                  <polygon class="bat-barrel" points="68.8,73.6 79.1,66.5 54.1,26.3 39.9,35.7"/>
+                  <!-- contact burst, parented to the bat so it lands on the
+                       barrel whatever the rig is doing -->
+                  <g class="contact-burst" transform="translate(47,31)"><g class="burst-rays"><polygon points="7.0,2.6 25.0,0.0 7.0,-2.6"/><polygon points="3.1,6.8 17.7,17.7 6.8,3.1"/><polygon points="-2.6,7.0 0.0,25.0 2.6,7.0"/><polygon points="-6.8,3.1 -17.7,17.7 -3.1,6.8"/><polygon points="-7.0,-2.6 -25.0,0.0 -7.0,2.6"/><polygon points="-3.1,-6.8 -17.7,-17.7 -6.8,-3.1"/><polygon points="2.6,-7.0 -0.0,-25.0 -2.6,-7.0"/><polygon points="6.8,-3.1 17.7,-17.7 3.1,-6.8"/></g><circle class="burst-core" r="6.5"/></g>
+                </g>
+              </g>
+            </g>
+          </g>
+
+          <!-- home plate, lying on the ground line -->
+          <path class="plate-shape" d="M238 350 L314 350 L314 359 L276 369 L238 359 Z"/>
+
+          <!-- strike zone: letters to the hollow of the knee -->
+          <g>
+            <rect class="z-cell" x="216" y="152" width="40" height="38"/>
+            <rect class="z-cell" x="256" y="152" width="40" height="38"/>
+            <rect class="z-cell" x="296" y="152" width="40" height="38"/>
+            <rect class="z-cell" x="216" y="190" width="40" height="38"/>
+            <rect class="z-cell" x="256" y="190" width="40" height="38"/>
+            <rect class="z-cell" x="296" y="190" width="40" height="38"/>
+            <rect class="z-cell" x="216" y="228" width="40" height="38"/>
+            <rect class="z-cell" x="256" y="228" width="40" height="38"/>
+            <rect class="z-cell" x="296" y="228" width="40" height="38"/>
+            <rect class="z-edge" x="216" y="152" width="120" height="114"/>
+          </g>
+
+          <!-- six pitches. Each ball is drawn at the origin and placed by its
+               transform, so the pitch animation only has to move the group. -->
+          <g id="m1" class="ball" data-p="1" transform="translate(276,209)" aria-hidden="true">
+            <circle class="mark-dot" r="16"/>
+            <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
+            <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
+            <text class="mark-num" y="6">1</text>
+          <text class="call-out" y="-28">Strike</text></g>
+          <g id="m2" class="ball" data-p="2" transform="translate(334,250)" aria-hidden="true">
+            <circle class="mark-dot" r="16"/>
+            <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
+            <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
+            <text class="mark-num" y="6">2</text>
+          <text class="call-out" x="-8" y="-28">Strike</text></g>
+          <g id="m3" class="ball" data-p="3" transform="translate(248,171)" aria-hidden="true">
+            <circle class="mark-dot" r="16"/>
+            <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
+            <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
+            <text class="mark-num" y="6">3</text>
+          <text class="call-out" y="-28">Strike</text></g>
+          <g id="m4" class="ball" data-p="4" transform="translate(288,300)" aria-hidden="true">
+            <circle class="mark-dot" r="16"/>
+            <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
+            <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
+            <text class="mark-num" y="6">4</text>
+          <text class="call-out" y="-28">Strike</text></g>
+          <g id="m5" class="ball" data-p="5" transform="translate(236,247)" aria-hidden="true">
+            <circle class="mark-dot" r="16"/>
+            <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
+            <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
+            <text class="mark-num" y="6">5</text>
+          <text class="call-out" y="-28">Strike</text></g>
+          <g id="m6" class="ball" data-p="6" transform="translate(194,176)" aria-hidden="true">
+            <circle class="mark-dot" r="16"/>
+            <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
+            <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
+            <text class="mark-num" y="6">6</text>
+          <text class="call-out" y="-28">Strike</text></g>
+        </svg>

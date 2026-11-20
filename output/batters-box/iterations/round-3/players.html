@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en" data-type="software" data-radius="sharp">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="page-type" content="software">
+<meta name="site-kind" content="software">
+<title>Players — Full Count</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   M4 — Players, restyled in Direction A (Scorebook).
+   The chart JS needs NO changes: it already draws with CSS
+   variables and classes. The old token names are aliased to the
+   new values at the bottom of :root, so every existing rule and
+   every SVG the JS emits picks up the new palette untouched.
+   Numbers shown are illustrative.
+   ============================================================ */
+:root {
+  --ground:  #16130f;
+  --panel:   #1e1a15;
+  --panel-2: #252017;
+  --rule:    #352d24;
+  --text:    #f1e8da;
+  --muted:   #a99b87;
+  --chalk:   #e6dac3;
+  --accent:  #dd6348;
+  --accent-ink: #1a0d08;
+  --away: #dd6348;
+  --home: #79b0cc;
+
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body:    "Barlow", system-ui, sans-serif;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 18px; --s5: 28px; --s6: 44px;
+  --pad: 40px;
+
+  /* --- aliases: the names the existing CSS and chart JS already use --- */
+  --bg: var(--ground);
+  --border: var(--rule);
+  --grid: var(--rule);
+  --text-dim: var(--muted);
+  --muted-dot: #8f7d66;   /* see NOTES: needs fill-opacity 0.55 -> 0.85 in the chart JS */
+  --radius: 0;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--ground); color: var(--text); font-family: var(--body); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 var(--pad); }
+a { color: inherit; text-decoration: none; }
+
+.topbar { border-bottom: 1px solid var(--rule); }
+.topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: var(--s5); padding-top: var(--s4); padding-bottom: 0; flex-wrap: wrap; }
+.mark { font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); padding-bottom: var(--s4); }
+nav.sections { display: flex; gap: var(--s1); flex-wrap: wrap; }
+nav.sections a { font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: var(--s3) var(--s3) var(--s4); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .18s, border-color .18s; }
+nav.sections a:hover { color: var(--text); }
+nav.sections a[aria-current="page"] { color: var(--text); border-bottom-color: var(--accent); }
+nav.sections a:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.sec-head { padding: var(--s5) 0 var(--s4); }
+h1 { font-family: var(--display); font-weight: 700; font-size: 38px; line-height: 1; margin: 0 0 var(--s2); }
+.sec-note { color: var(--muted); margin: 0; max-width: 64ch; font-size: 15px; }
+
+/* ---------- controls ---------- */
+.controls { display: flex; flex-wrap: wrap; gap: var(--s4); align-items: end; margin-bottom: var(--s4); }
+.field { flex: 1 1 170px; min-width: 150px; max-width: 280px; }
+.field.narrow { flex: 0 1 120px; min-width: 100px; }
+.field.auto { flex: 0 0 auto; }
+label { display: block; font-family: var(--display); font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 0 0 var(--s2); }
+select, input[type="number"] { width: 100%; padding: 10px 12px; background: var(--ground); color: var(--text); border: 1px solid var(--rule); border-radius: 0; font-family: var(--body); font-size: 15px; }
+select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.segmented { display: inline-flex; border: 1px solid var(--rule); background: var(--ground); }
+.segmented button { background: none; border: none; color: var(--muted); padding: 9px 16px; font-family: var(--display); font-weight: 600; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: color .18s, background .18s; }
+.segmented button + button { border-left: 1px solid var(--rule); }
+.segmented button:hover { color: var(--text); }
+.segmented button.active { background: var(--panel-2); color: var(--text); }
+.segmented button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.panel { background: var(--panel); border: 1px solid var(--rule); padding: var(--s4); }
+.source-note { color: var(--muted); font-size: 13px; margin-top: var(--s3); }
+
+/* ---------- charts: classes the JS already emits ---------- */
+.chart { width: 100%; }
+.chart svg { display: block; width: 100%; }
+.chart text { fill: var(--text); font-size: 12px; font-family: var(--body); }
+.chart .dim { fill: var(--text-dim); font-size: 11px; font-variant-numeric: tabular-nums; }
+.chart .gridline { stroke: var(--grid); stroke-width: 1; }
+.chart .refline { stroke: var(--text-dim); stroke-width: 1; stroke-dasharray: 4 4; }
+.chart .stem { stroke: var(--border); stroke-width: 2; }
+.chart .stripe { fill: var(--panel-2); opacity: 0.55; }
+.chart .hit { cursor: pointer; }
+.chart .hit:hover circle { filter: brightness(1.2); }
+
+/* ---------- teams detail ---------- */
+.block { margin-top: var(--s5); }
+.detail-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); flex-wrap: wrap; margin-bottom: var(--s4); }
+.team-banner { display: flex; align-items: center; gap: var(--s3); }
+.crest { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: 13px; border: 1px solid var(--rule); background: var(--panel-2); color: var(--muted); flex: none; }
+.team-banner .name { font-family: var(--display); font-weight: 700; font-size: 26px; line-height: 1; }
+.team-banner .sub { color: var(--muted); font-size: 14px; }
+button.secondary { background: var(--panel-2); color: var(--text); border: 1px solid var(--rule); border-radius: 0; padding: 10px 16px; font-family: var(--display); font-weight: 600; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: border-color .18s, transform .18s; }
+button.secondary:hover { border-color: var(--muted); transform: translateY(-2px); }
+button.secondary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-bottom: var(--s4); }
+.tile { background: var(--panel); padding: var(--s3) var(--s4); }
+.tile .k { font-family: var(--display); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.tile .v { font-family: var(--display); font-weight: 700; font-size: 28px; line-height: 1.1; margin: 2px 0; font-variant-numeric: tabular-nums; }
+.tile .r { font-size: 12px; color: var(--muted); }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s5); }
+.two-col h2 { font-family: var(--display); font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 var(--s2); }
+
+footer { border-top: 1px solid var(--rule); margin-top: var(--s6); padding: var(--s4) 0 var(--s5); }
+footer p { margin: 0; color: var(--muted); font-size: 13px; }
+
+
+/* The live chart JS re-renders at the container's clientWidth, so on a phone it
+   emits a narrow layout (shorter labels, fewer ticks). A static mockup cannot
+   re-render, so both variants are embedded and swapped at the same 520px
+   threshold the JS uses for `narrow`. */
+.c-narrow { display: none; }
+@media (max-width: 520px) { .c-wide { display: none; } .c-narrow { display: block; } }
+@media (max-width: 820px) { :root { --pad: 24px; } .two-col { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="mark" href="#home">Full Count</a>
+    <nav class="sections">
+      <a href="#predictions">Predictions</a>
+      <a href="#players" aria-current="page">Players</a>
+      <a href="#teams">Teams</a>
+      <a href="#model">Model</a>
+      <a href="#matchups">Matchups</a>
+      <a href="#about">About</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="sec-head">
+    <h1>Players</h1>
+    <p class="sec-note">Each dot is a player. Hover for the full line; pick a team to narrow the board. Display only — none of these are model inputs.</p>
+  </div>
+
+  <div class="controls">
+    <div class="field auto">
+      <label>Role</label>
+      <div class="segmented"><button class="active">Hitters</button><button>Pitchers</button></div>
+    </div>
+    <div class="field auto">
+      <label>View</label>
+      <div class="segmented"><button class="active">Leaderboard</button><button>Compare</button></div>
+    </div>
+    <div class="field"><label for="p-team">Team</label><select id="p-team"><option>All teams</option></select></div>
+    <div class="field"><label for="p-metric">Stat</label><select id="p-metric"><option>WAR</option></select></div>
+    <div class="field narrow"><label for="p-min">Min PA</label><input type="number" id="p-min" value="300" step="10"></div>
+    <div class="field narrow"><label for="p-top">Show</label><select id="p-top"><option>Top 25</option></select></div>
+  </div>
+
+  <div class="panel">
+    <div class="chart"><div class="c-wide"><svg viewBox="0 0 1064 430" height="430" role="img" aria-label="WAR dot plot"><line class="gridline" x1="190.0" x2="190.0" y1="20" y2="422"/><text class="dim" x="190.0" y="14" text-anchor="middle">0.0</text><line class="gridline" x1="355.2" x2="355.2" y1="20" y2="422"/><text class="dim" x="355.2" y="14" text-anchor="middle">2.2</text><line class="gridline" x1="520.4" x2="520.4" y1="20" y2="422"/><text class="dim" x="520.4" y="14" text-anchor="middle">4.5</text><line class="gridline" x1="685.6" x2="685.6" y1="20" y2="422"/><text class="dim" x="685.6" y="14" text-anchor="middle">6.7</text><line class="gridline" x1="850.8" x2="850.8" y1="20" y2="422"/><text class="dim" x="850.8" y="14" text-anchor="middle">9.0</text><line class="gridline" x1="1016.0" x2="1016.0" y1="20" y2="422"/><text class="dim" x="1016.0" y="14" text-anchor="middle">11.2</text><g class="hit"><text class="dim" x="4" y="41">1</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/147.svg" x="26" y="29" width="16" height="16"/><text x="52" y="41">Aaron Judge</text><line class="stem" x1="190.0" x2="984.2" y1="37" y2="37"/><circle cx="984.2" cy="37" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="994.2" y="41" text-anchor="start">10.8</text></g><g class="hit"><rect class="stripe" x="0" y="48" width="1064" height="22"/><text class="dim" x="4" y="63">2</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/118.svg" x="26" y="51" width="16" height="16"/><text x="52" y="63">Bobby Witt Jr.</text><line class="stem" x1="190.0" x2="881.3" y1="59" y2="59"/><circle cx="881.3" cy="59" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="891.3" y="63" text-anchor="start">9.4</text></g><g class="hit"><text class="dim" x="4" y="85">3</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/119.svg" x="26" y="73" width="16" height="16"/><text x="52" y="85">Shohei Ohtani</text><line class="stem" x1="190.0" x2="866.6" y1="81" y2="81"/><circle cx="866.6" cy="81" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="876.6" y="85" text-anchor="start">9.2</text></g><g class="hit"><rect class="stripe" x="0" y="92" width="1064" height="22"/><text class="dim" x="4" y="107">4</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/147.svg" x="26" y="95" width="16" height="16"/><text x="52" y="107">Juan Soto</text><line class="stem" x1="190.0" x2="771.0" y1="103" y2="103"/><circle cx="771.0" cy="103" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="781.0" y="107" text-anchor="start">7.9</text></g><g class="hit"><text class="dim" x="4" y="129">5</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/110.svg" x="26" y="117" width="16" height="16"/><text x="52" y="129">Gunnar Henderson</text><line class="stem" x1="190.0" x2="741.5" y1="125" y2="125"/><circle cx="741.5" cy="125" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="751.5" y="129" text-anchor="start">7.5</text></g><g class="hit"><rect class="stripe" x="0" y="136" width="1064" height="22"/><text class="dim" x="4" y="151">6</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/121.svg" x="26" y="139" width="16" height="16"/><text x="52" y="151">Francisco Lindor</text><line class="stem" x1="190.0" x2="734.2" y1="147" y2="147"/><circle cx="734.2" cy="147" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="744.2" y="151" text-anchor="start">7.4</text></g><g class="hit"><text class="dim" x="4" y="173">7</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/111.svg" x="26" y="161" width="16" height="16"/><text x="52" y="173">Jarren Duran</text><line class="stem" x1="190.0" x2="690.1" y1="169" y2="169"/><circle cx="690.1" cy="169" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="700.1" y="173" text-anchor="start">6.8</text></g><g class="hit"><rect class="stripe" x="0" y="180" width="1064" height="22"/><text class="dim" x="4" y="195">8</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/109.svg" x="26" y="183" width="16" height="16"/><text x="52" y="195">Ketel Marte</text><line class="stem" x1="190.0" x2="668.0" y1="191" y2="191"/><circle cx="668.0" cy="191" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="678.0" y="195" text-anchor="start">6.5</text></g><g class="hit"><text class="dim" x="4" y="217">9</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/113.svg" x="26" y="205" width="16" height="16"/><text x="52" y="217">Elly De La Cruz</text><line class="stem" x1="190.0" x2="631.2" y1="213" y2="213"/><circle cx="631.2" cy="213" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="641.2" y="217" text-anchor="start">6.0</text></g><g class="hit"><rect class="stripe" x="0" y="224" width="1064" height="22"/><text class="dim" x="4" y="239">10</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/135.svg" x="26" y="227" width="16" height="16"/><text x="52" y="239">Jackson Merrill</text><line class="stem" x1="190.0" x2="579.8" y1="235" y2="235"/><circle cx="579.8" cy="235" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="589.8" y="239" text-anchor="start">5.3</text></g><g class="hit"><text class="dim" x="4" y="261">11</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/140.svg" x="26" y="249" width="16" height="16"/><text x="52" y="261">Marcus Semien</text><line class="stem" x1="190.0" x2="550.3" y1="257" y2="257"/><circle cx="550.3" cy="257" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="560.3" y="261" text-anchor="start">4.9</text></g><g class="hit"><rect class="stripe" x="0" y="268" width="1064" height="22"/><text class="dim" x="4" y="283">12</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/111.svg" x="26" y="271" width="16" height="16"/><text x="52" y="283">Rafael Devers</text><line class="stem" x1="190.0" x2="528.3" y1="279" y2="279"/><circle cx="528.3" cy="279" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="538.3" y="283" text-anchor="start">4.6</text></g><g class="hit"><text class="dim" x="4" y="305">13</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/109.svg" x="26" y="293" width="16" height="16"/><text x="52" y="305">Corbin Carroll</text><line class="stem" x1="190.0" x2="513.6" y1="301" y2="301"/><circle cx="513.6" cy="301" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="523.6" y="305" text-anchor="start">4.4</text></g><g class="hit"><rect class="stripe" x="0" y="312" width="1064" height="22"/><text class="dim" x="4" y="327">14</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/114.svg" x="26" y="315" width="16" height="16"/><text x="52" y="327">José Ramírez</text><line class="stem" x1="190.0" x2="506.2" y1="323" y2="323"/><circle cx="506.2" cy="323" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="516.2" y="327" text-anchor="start">4.3</text></g><g class="hit"><text class="dim" x="4" y="349">15</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/158.svg" x="26" y="337" width="16" height="16"/><text x="52" y="349">William Contreras</text><line class="stem" x1="190.0" x2="498.9" y1="345" y2="345"/><circle cx="498.9" cy="345" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="508.9" y="349" text-anchor="start">4.2</text></g><g class="hit"><rect class="stripe" x="0" y="356" width="1064" height="22"/><text class="dim" x="4" y="371">16</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/141.svg" x="26" y="359" width="16" height="16"/><text x="52" y="371">Vladimir Guerrero Jr.</text><line class="stem" x1="190.0" x2="491.5" y1="367" y2="367"/><circle cx="491.5" cy="367" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="501.5" y="371" text-anchor="start">4.1</text></g><g class="hit"><text class="dim" x="4" y="393">17</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/117.svg" x="26" y="381" width="16" height="16"/><text x="52" y="393">Yordan Alvarez</text><line class="stem" x1="190.0" x2="484.2" y1="389" y2="389"/><circle cx="484.2" cy="389" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="494.2" y="393" text-anchor="start">4.0</text></g><g class="hit"><rect class="stripe" x="0" y="400" width="1064" height="22"/><text class="dim" x="4" y="415">18</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/119.svg" x="26" y="403" width="16" height="16"/><text x="52" y="415">Mookie Betts</text><line class="stem" x1="190.0" x2="469.5" y1="411" y2="411"/><circle cx="469.5" cy="411" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="479.5" y="415" text-anchor="start">3.8</text></g></svg></div><div class="c-narrow"><svg viewBox="0 0 327 430" height="430" role="img" aria-label="WAR dot plot"><line class="gridline" x1="118.0" x2="118.0" y1="20" y2="422"/><text class="dim" x="118.0" y="14" text-anchor="middle">0.0</text><line class="gridline" x1="171.7" x2="171.7" y1="20" y2="422"/><text class="dim" x="171.7" y="14" text-anchor="middle">3.7</text><line class="gridline" x1="225.3" x2="225.3" y1="20" y2="422"/><text class="dim" x="225.3" y="14" text-anchor="middle">7.5</text><line class="gridline" x1="279.0" x2="279.0" y1="20" y2="422"/><text class="dim" x="279.0" y="14" text-anchor="middle">11.2</text><g class="hit"><text class="dim" x="4" y="41">1</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/147.svg" x="26" y="29" width="16" height="16"/><text x="52" y="41">Aaron Judge</text><line class="stem" x1="118.0" x2="272.8" y1="37" y2="37"/><circle cx="272.8" cy="37" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="282.8" y="41" text-anchor="start">10.8</text></g><g class="hit"><rect class="stripe" x="0" y="48" width="327" height="22"/><text class="dim" x="4" y="63">2</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/118.svg" x="26" y="51" width="16" height="16"/><text x="52" y="63">Bobby Witt Jr.</text><line class="stem" x1="118.0" x2="252.7" y1="59" y2="59"/><circle cx="252.7" cy="59" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="262.7" y="63" text-anchor="start">9.4</text></g><g class="hit"><text class="dim" x="4" y="85">3</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/119.svg" x="26" y="73" width="16" height="16"/><text x="52" y="85">Shohei Ohtani</text><line class="stem" x1="118.0" x2="249.9" y1="81" y2="81"/><circle cx="249.9" cy="81" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="259.9" y="85" text-anchor="start">9.2</text></g><g class="hit"><rect class="stripe" x="0" y="92" width="327" height="22"/><text class="dim" x="4" y="107">4</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/147.svg" x="26" y="95" width="16" height="16"/><text x="52" y="107">Juan Soto</text><line class="stem" x1="118.0" x2="231.2" y1="103" y2="103"/><circle cx="231.2" cy="103" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="241.2" y="107" text-anchor="start">7.9</text></g><g class="hit"><text class="dim" x="4" y="129">5</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/110.svg" x="26" y="117" width="16" height="16"/><text x="52" y="129">Gunnar Hender…</text><line class="stem" x1="118.0" x2="225.5" y1="125" y2="125"/><circle cx="225.5" cy="125" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="235.5" y="129" text-anchor="start">7.5</text></g><g class="hit"><rect class="stripe" x="0" y="136" width="327" height="22"/><text class="dim" x="4" y="151">6</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/121.svg" x="26" y="139" width="16" height="16"/><text x="52" y="151">Francisco Lin…</text><line class="stem" x1="118.0" x2="224.1" y1="147" y2="147"/><circle cx="224.1" cy="147" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="234.1" y="151" text-anchor="start">7.4</text></g><g class="hit"><text class="dim" x="4" y="173">7</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/111.svg" x="26" y="161" width="16" height="16"/><text x="52" y="173">Jarren Duran</text><line class="stem" x1="118.0" x2="215.5" y1="169" y2="169"/><circle cx="215.5" cy="169" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="225.5" y="173" text-anchor="start">6.8</text></g><g class="hit"><rect class="stripe" x="0" y="180" width="327" height="22"/><text class="dim" x="4" y="195">8</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/109.svg" x="26" y="183" width="16" height="16"/><text x="52" y="195">Ketel Marte</text><line class="stem" x1="118.0" x2="211.2" y1="191" y2="191"/><circle cx="211.2" cy="191" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="221.2" y="195" text-anchor="start">6.5</text></g><g class="hit"><text class="dim" x="4" y="217">9</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/113.svg" x="26" y="205" width="16" height="16"/><text x="52" y="217">Elly De La Cr…</text><line class="stem" x1="118.0" x2="204.0" y1="213" y2="213"/><circle cx="204.0" cy="213" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="214.0" y="217" text-anchor="start">6.0</text></g><g class="hit"><rect class="stripe" x="0" y="224" width="327" height="22"/><text class="dim" x="4" y="239">10</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/135.svg" x="26" y="227" width="16" height="16"/><text x="52" y="239">Jackson Merri…</text><line class="stem" x1="118.0" x2="194.0" y1="235" y2="235"/><circle cx="194.0" cy="235" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="204.0" y="239" text-anchor="start">5.3</text></g><g class="hit"><text class="dim" x="4" y="261">11</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/140.svg" x="26" y="249" width="16" height="16"/><text x="52" y="261">Marcus Semien</text><line class="stem" x1="118.0" x2="188.2" y1="257" y2="257"/><circle cx="188.2" cy="257" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="198.2" y="261" text-anchor="start">4.9</text></g><g class="hit"><rect class="stripe" x="0" y="268" width="327" height="22"/><text class="dim" x="4" y="283">12</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/111.svg" x="26" y="271" width="16" height="16"/><text x="52" y="283">Rafael Devers</text><line class="stem" x1="118.0" x2="183.9" y1="279" y2="279"/><circle cx="183.9" cy="279" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="193.9" y="283" text-anchor="start">4.6</text></g><g class="hit"><text class="dim" x="4" y="305">13</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/109.svg" x="26" y="293" width="16" height="16"/><text x="52" y="305">Corbin Carroll</text><line class="stem" x1="118.0" x2="181.1" y1="301" y2="301"/><circle cx="181.1" cy="301" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="191.1" y="305" text-anchor="start">4.4</text></g><g class="hit"><rect class="stripe" x="0" y="312" width="327" height="22"/><text class="dim" x="4" y="327">14</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/114.svg" x="26" y="315" width="16" height="16"/><text x="52" y="327">José Ramírez</text><line class="stem" x1="118.0" x2="179.6" y1="323" y2="323"/><circle cx="179.6" cy="323" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="189.6" y="327" text-anchor="start">4.3</text></g><g class="hit"><text class="dim" x="4" y="349">15</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/158.svg" x="26" y="337" width="16" height="16"/><text x="52" y="349">William Contr…</text><line class="stem" x1="118.0" x2="178.2" y1="345" y2="345"/><circle cx="178.2" cy="345" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="188.2" y="349" text-anchor="start">4.2</text></g><g class="hit"><rect class="stripe" x="0" y="356" width="327" height="22"/><text class="dim" x="4" y="371">16</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/141.svg" x="26" y="359" width="16" height="16"/><text x="52" y="371">Vladimir Guer…</text><line class="stem" x1="118.0" x2="176.8" y1="367" y2="367"/><circle cx="176.8" cy="367" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="186.8" y="371" text-anchor="start">4.1</text></g><g class="hit"><text class="dim" x="4" y="393">17</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/117.svg" x="26" y="381" width="16" height="16"/><text x="52" y="393">Yordan Alvarez</text><line class="stem" x1="118.0" x2="175.3" y1="389" y2="389"/><circle cx="175.3" cy="389" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="185.3" y="393" text-anchor="start">4.0</text></g><g class="hit"><rect class="stripe" x="0" y="400" width="327" height="22"/><text class="dim" x="4" y="415">18</text><image href="https://www.mlbstatic.com/team-logos/team-cap-on-dark/119.svg" x="26" y="403" width="16" height="16"/><text x="52" y="415">Mookie Betts</text><line class="stem" x1="118.0" x2="172.5" y1="411" y2="411"/><circle cx="172.5" cy="411" r="6" fill="var(--accent)" stroke="var(--bg)" stroke-width="1.5"/><text class="dim" x="182.5" y="415" text-anchor="start">3.8</text></g></svg></div></div>
+    <p class="source-note">WAR, OPS+, ERA+: Baseball-Reference (bWAR). AVG/OBP/SLG, wOBA, xwOBA, contact and plate-discipline rates: Baseball Savant. Season to date; display only, not model inputs.</p>
+  </div>
+
+</div>
+
+<footer>
+  <div class="wrap"><p>Stats from the MLB Stats API, Baseball-Reference and Baseball Savant. Season to date.</p></div>
+</footer>
+
+</body>
+</html>

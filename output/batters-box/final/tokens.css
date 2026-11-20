@@ -1,0 +1,33 @@
+/* Full Count — design tokens, as shipped in src/api/static/index.html.
+   Direction A ("Scorebook"), chosen 2026-11-20.
+   This file is the source of truth; the :root block in index.html matches it. */
+/* ---------- Full Count design tokens (Direction A, "Scorebook") ----------
+   The second half aliases the names the rest of this file and the chart JS
+   already use, so every rule and every SVG they emit picks up this palette. */
+:root {
+  --ground:     #16130f;
+  --panel:      #1e1a15;
+  --panel-2:    #252017;
+  --rule:       #352d24;
+  --text:       #f1e8da;
+  --muted:      #a99b87;
+  --chalk:      #e6dac3;
+  --accent:     #dd6348;
+  --accent-ink: #1a0d08;
+
+  --home: #79b0cc;
+  --away: #dd6348;
+
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body:    "Barlow", system-ui, sans-serif;
+
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 18px; --s5: 28px; --s6: 44px;
+
+  /* aliases for the names already in use below and in the chart JS */
+  --bg:        var(--ground);
+  --border:    var(--rule);
+  --grid:      var(--rule);
+  --text-dim:  var(--muted);
+  --muted-dot: #8f7d66;
+  --radius:    0;
+}

@@ -1,0 +1,34 @@
+{
+ "url": "http://127.0.0.1:5300/about.html",
+ "views": {
+  "mobile": {
+   "width": 375,
+   "height": 812,
+   "navH": 0,
+   "scrollHeight": 1901,
+   "screens": 2.34,
+   "sections": [
+    {
+     "n": 1,
+     "tag": "footer",
+     "id": "",
+     "cls": "",
+     "top": 1814,
+     "h": 87,
+     "hScreens": 0.11,
+     "offGrid": 87,
+     "tiles": [
+      {
+       "file": "mobile-sec-01-a.jpg",
+       "scrollY": 1089,
+       "cutTop": 725,
+       "height": 87
+      }
+     ]
+    }
+   ],
+   "consoleErrors": []
+  }
+ },
+ "at": "2026-11-20T10:25:44.662Z"
+}

@@ -1,0 +1,39 @@
+/* Full Count — Direction A (Scorebook) tokens.
+   Draft from M4; the final copy lands in output/batters-box/final/tokens.css at M6.
+
+   The block below replaces the :root of src/api/static/index.html. The second
+   half aliases the token names the existing CSS and the chart JS already use,
+   so every current rule and every SVG the JS emits picks up the new palette
+   with no other change. */
+:root {
+  /* --- the system --- */
+  --ground:     #16130f;   /* page */
+  --panel:      #1e1a15;   /* cards, panels */
+  --panel-2:    #252017;   /* inset surfaces: tiles, hitter cards, stripes */
+  --rule:       #352d24;   /* hairlines */
+  --text:       #f1e8da;
+  --muted:      #a99b87;
+  --chalk:      #e6dac3;   /* the diagram's lines and the batter */
+  --accent:     #dd6348;   /* red pencil */
+  --accent-ink: #1a0d08;   /* text on an accent fill */
+
+  /* --- the two sides of a game --- */
+  --away: #dd6348;
+  --home: #79b0cc;
+
+  /* --- type --- */
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body:    "Barlow", system-ui, sans-serif;
+
+  /* --- spacing --- */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 18px; --s5: 28px; --s6: 44px;
+  --pad: 40px;
+
+  /* --- aliases: names the existing CSS and chart JS already reference --- */
+  --bg:         var(--ground);
+  --border:     var(--rule);
+  --grid:       var(--rule);
+  --text-dim:   var(--muted);
+  --muted-dot:  #8f7d66;   /* needs fill-opacity 0.55 -> 0.85 in drawScatter */
+  --radius:     0;
+}

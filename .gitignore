@@ -37,3 +37,9 @@ models/*
 *.pt
 *.pth
 .DS_Store
+
+# Design-agent scaffolding. The screenshot tooling drops a Chrome profile and
+# checker crops inside output/ — 129MB of it last time. The design work itself
+# (notes, mockups, tokens, spec) is committed; this is regenerated on demand.
+output/**/.profile/
+output/**/.taste-skill/
