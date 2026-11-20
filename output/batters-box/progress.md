@@ -1,7 +1,7 @@
 # Progress — batters-box
 
 **Current phase:** Phase 5 — Final delivery
-**Status:** complete (pushed); the home page animation shipped as a follow-up
+**Status:** complete. Everything is pushed, including this design project.
 
 ## Completed milestones
 - **2026-11-20** — Phase 0: project root confirmed (`/Users/arins/Documents/Projects/BaseballModel`); no earlier design projects found.
@@ -26,11 +26,11 @@
 - **2026-11-20** — Committed and **pushed** to `arinb44/MLB-predictive-model` as `bfc6f4a` on `main`. The first push was rejected because this checkout's `main` was a parallel rewrite of the remote's history (same 11 subjects, different hashes and dates, identical trees); the user rebased the single unpushed commit onto `origin/main`, which resolved it. 25/25 tests pass on the rebased commit.
 
 ## Next step
-Decide whether `output/` (this design project: directions, iterations, notes, spec, final assets,
-screenshots) and `.claude/` should be committed too. The application change is already pushed.
+None outstanding. The redesign, the animation and this design project are all
+on `main` at `arinb44/MLB-predictive-model`.
 
 ## Open questions
-1. Should `output/` and `.claude/` be committed, or stay local?
+1. ~~Should `output/` be committed?~~ — **committed and pushed** as `3b7bbe0`, with `.profile/` and `.taste-skill/` gitignored. `.claude/` stays local.
 2. Which GitHub repository should commits go to? (Existing remote: `origin https://github.com/arinb44/MLB-predictive-model.git`.) Nothing is committed until answered.
 3. ~~Approve the head-to-head route~~ — **approved**; contract in `iterations/round-4/head-to-head-endpoint.md`, implemented at M6.
 4. SVG assets inlined into `index.html` (no static mount exists), or add `StaticFiles` to `src/api/main.py`? The same answer decides whether the Model page can show `reports/shap_*.png`.
