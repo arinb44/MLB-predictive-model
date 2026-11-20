@@ -45,7 +45,7 @@ from pydantic import BaseModel, Field
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.data.build_features import add_starter_features, build_game_features, merge_elo_features  # noqa: E402
-from src.data.teams import TEAMS, logo_url, primary_logo_url  # noqa: E402
+from src.data.teams import TEAMS, canonical_team, logo_url, primary_logo_url  # noqa: E402
 from src.models.elo import compute_elo_ratings  # noqa: E402
 
 _state: dict = {}
@@ -483,6 +483,77 @@ def player_stats(role: Optional[str] = None, team: Optional[str] = None) -> List
 @app.get("/stats/teams", response_model=List[TeamStatLine])
 def team_stats() -> List[TeamStatLine]:
     return [TeamStatLine(**r) for r in _records(_state["team_stats"])]
+
+
+class HeadToHeadGame(BaseModel):
+    date: str
+    home: str
+    away: str
+    home_runs: int
+    away_runs: int
+    winner: str
+
+
+class HeadToHeadResponse(BaseModel):
+    team_a: str
+    team_b: str
+    season: int
+    a_wins: int
+    b_wins: int
+    a_run_diff: int
+    last_meeting: Optional[str]
+    games: List[HeadToHeadGame]
+
+
+@app.get("/head-to-head/{team_a}/{team_b}", response_model=HeadToHeadResponse)
+def head_to_head(team_a: str, team_b: str, season: Optional[int] = None) -> HeadToHeadResponse:
+    """Season series between two teams, for the UI's Matchups view.
+
+    Display only: head-to-head results are deliberately NOT a model feature —
+    a handful of games is far too small a sample to move a probability, and
+    the model already sees these games through each team's rolling form and
+    Elo. Nothing here touches the feature pipeline.
+    """
+    team_a, team_b = canonical_team(team_a), canonical_team(team_b)
+    for code in (team_a, team_b):
+        if code not in _state["known_teams"]:
+            raise HTTPException(status_code=404, detail=f"Unknown team code: {code!r}")
+    if team_a == team_b:
+        raise HTTPException(status_code=400, detail="Teams must be different.")
+
+    log = _state["game_log"]
+    if season is None:
+        season = int(log["season"].max())
+    pair = log[
+        (log["season"] == season)
+        & (
+            ((log["home_team"] == team_a) & (log["away_team"] == team_b))
+            | ((log["home_team"] == team_b) & (log["away_team"] == team_a))
+        )
+    ].sort_values("game_date", ascending=False)
+
+    games, a_wins, b_wins, a_run_diff = [], 0, 0, 0
+    for r in pair.itertuples():
+        home_runs, away_runs = int(r.home_score), int(r.away_score)
+        winner = r.home_team if home_runs > away_runs else r.away_team
+        a_runs = home_runs if r.home_team == team_a else away_runs
+        b_runs = away_runs if r.home_team == team_a else home_runs
+        a_run_diff += a_runs - b_runs
+        if winner == team_a:
+            a_wins += 1
+        else:
+            b_wins += 1
+        games.append(HeadToHeadGame(
+            date=str(r.game_date), home=r.home_team, away=r.away_team,
+            home_runs=home_runs, away_runs=away_runs, winner=winner,
+        ))
+
+    return HeadToHeadResponse(
+        team_a=team_a, team_b=team_b, season=season,
+        a_wins=a_wins, b_wins=b_wins, a_run_diff=a_run_diff,
+        last_meeting=games[0].date if games else None,
+        games=games,
+    )
 
 
 @app.get("/health")

@@ -50,10 +50,14 @@ ceiling is part of the point, not a caveat to hide.
    sportsbook closing-line implied probabilities as a near-efficient external
    baseline.
 6. **Deployment** — FastAPI endpoint (team names + date -> win probability)
-   with a three-tab web UI — **Predictions** (team/pitcher/hitter pickers and
-   a matchup card with both teams' logos), **Players** (WAR and other stats
-   as dot plots), and **Teams** (offensive rating and other team stats as
-   logo dot plots) — containerized with Docker.
+   with a web UI called **Full Count**, containerized with Docker. The home
+   page is a batter's box: six pitches in and around the strike zone, one per
+   section. **Predictions** (team/pitcher/hitter pickers and a matchup card
+   with both teams' logos), **Players** (WAR and other stats as dot plots),
+   **Teams** (offensive rating and other team stats as logo dot plots),
+   **Model** (what drives the number), **Matchups** (season series between two
+   teams, from `/head-to-head/{team_a}/{team_b}` — display only, never a model
+   feature), and **About the data** (sources, and what the model ignores).
 
 ## Results
 

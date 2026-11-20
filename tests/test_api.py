@@ -46,7 +46,39 @@ def test_ui_served_at_root(client):
     resp = client.get("/")
     assert resp.status_code == 200
     assert "text/html" in resp.headers["content-type"]
-    assert "MLB Game Outcome Predictor" in resp.text
+    assert "Full Count" in resp.text
+
+
+def test_head_to_head_totals_match_its_own_games(client):
+    resp = client.get("/head-to-head/BOS/NYY")
+    assert resp.status_code == 200
+    d = resp.json()
+
+    assert d["team_a"] == "BOS" and d["team_b"] == "NYY"
+    assert d["a_wins"] + d["b_wins"] == len(d["games"])
+
+    # the summary must be derivable from the games it ships, or the page lies
+    a_wins = sum(1 for g in d["games"] if g["winner"] == "BOS")
+    run_diff = sum(
+        (g["home_runs"] if g["home"] == "BOS" else g["away_runs"])
+        - (g["away_runs"] if g["home"] == "BOS" else g["home_runs"])
+        for g in d["games"]
+    )
+    assert a_wins == d["a_wins"]
+    assert run_diff == d["a_run_diff"]
+
+    for g in d["games"]:
+        assert {g["home"], g["away"]} == {"BOS", "NYY"}
+        assert g["winner"] in (g["home"], g["away"])
+    if d["games"]:
+        assert d["last_meeting"] == d["games"][0]["date"]
+        # most recent first
+        assert [g["date"] for g in d["games"]] == sorted((g["date"] for g in d["games"]), reverse=True)
+
+
+def test_head_to_head_rejects_bad_teams(client):
+    assert client.get("/head-to-head/BOS/BOS").status_code == 400
+    assert client.get("/head-to-head/BOS/ZZZ").status_code == 404
 
 
 def test_teams_lists_all_30(client):
