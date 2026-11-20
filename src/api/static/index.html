@@ -338,6 +338,14 @@
   .plate-shape { fill: none; stroke: var(--chalk); stroke-width: 2; }
   .b-dim { opacity: .62; }          /* one opacity per mass, so overlaps show no seam */
   .b-fill { fill: var(--chalk); }
+  .call-out {
+    fill: var(--accent); font-family: var(--display); font-weight: 700; font-size: 16px;
+    letter-spacing: 0.14em; text-transform: uppercase; text-anchor: middle;
+    opacity: 0; transform-box: fill-box; transform-origin: center;
+  }
+  .contact-burst { opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .burst-rays { fill: var(--accent); }
+  .burst-core { fill: var(--chalk); }
   .bat-trail { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; opacity: 0; }
   .bat-handle { fill: var(--chalk); opacity: .85; }
   .bat-barrel { fill: var(--accent); }
@@ -519,6 +527,9 @@
                        barrel is its own colour so you can follow it through -->
                   <polygon class="bat-handle" points="92.4,104.7 99.6,99.3 79.1,66.5 68.8,73.6"/>
                   <polygon class="bat-barrel" points="68.8,73.6 79.1,66.5 54.1,26.3 39.9,35.7"/>
+                  <!-- contact burst, parented to the bat so it lands on the
+                       barrel whatever the rig is doing -->
+                  <g class="contact-burst" transform="translate(47,31)"><g class="burst-rays"><polygon points="7.0,2.6 25.0,0.0 7.0,-2.6"/><polygon points="3.1,6.8 17.7,17.7 6.8,3.1"/><polygon points="-2.6,7.0 0.0,25.0 2.6,7.0"/><polygon points="-6.8,3.1 -17.7,17.7 -3.1,6.8"/><polygon points="-7.0,-2.6 -25.0,0.0 -7.0,2.6"/><polygon points="-3.1,-6.8 -17.7,-17.7 -6.8,-3.1"/><polygon points="2.6,-7.0 -0.0,-25.0 -2.6,-7.0"/><polygon points="6.8,-3.1 17.7,-17.7 3.1,-6.8"/></g><circle class="burst-core" r="6.5"/></g>
                 </g>
               </g>
             </g>
@@ -548,37 +559,37 @@
             <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
             <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
             <text class="mark-num" y="6">1</text>
-          </g>
+          <text class="call-out" y="-28">Strike</text></g>
           <g id="m2" class="ball" data-p="2" transform="translate(334,250)" aria-hidden="true">
             <circle class="mark-dot" r="16"/>
             <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
             <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
             <text class="mark-num" y="6">2</text>
-          </g>
+          <text class="call-out" x="-8" y="-28">Strike</text></g>
           <g id="m3" class="ball" data-p="3" transform="translate(248,171)" aria-hidden="true">
             <circle class="mark-dot" r="16"/>
             <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
             <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
             <text class="mark-num" y="6">3</text>
-          </g>
+          <text class="call-out" y="-28">Strike</text></g>
           <g id="m4" class="ball" data-p="4" transform="translate(288,300)" aria-hidden="true">
             <circle class="mark-dot" r="16"/>
             <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
             <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
             <text class="mark-num" y="6">4</text>
-          </g>
+          <text class="call-out" y="-28">Strike</text></g>
           <g id="m5" class="ball" data-p="5" transform="translate(236,247)" aria-hidden="true">
             <circle class="mark-dot" r="16"/>
             <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
             <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
             <text class="mark-num" y="6">5</text>
-          </g>
+          <text class="call-out" y="-28">Strike</text></g>
           <g id="m6" class="ball" data-p="6" transform="translate(194,176)" aria-hidden="true">
             <circle class="mark-dot" r="16"/>
             <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
             <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
             <text class="mark-num" y="6">6</text>
-          </g>
+          <text class="call-out" y="-28">Strike</text></g>
         </svg>
       </figure>
       <ol class="pitches">
@@ -1661,8 +1672,14 @@ const RELEASE = { x: 276, y: 196, scale: 0.12 };
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 const TRAVEL_MS = 900, SWING_TOTAL = 900, FLIGHT_MS = 520;
+// a beat after the pitch finishes, so the contact lands before the page moves
+const HOLD_MS = 1000;
 // where in the swing the barrel is in the zone — the fastball is timed to meet it
 const CONTACT_FRAC = 0.58;
+// Where the barrel actually ends up at contact, measured off the live rig
+// rather than derived — the perspective turn moves it well past where the
+// flat trigonometry says it should be.
+const CONTACT_POINT = { x: 264, y: 239 };
 
 function ballRest(g) {
   const t = g.getAttribute("transform").match(/translate\(([-\d.]+),\s*([-\d.]+)\)/);
@@ -1676,19 +1693,22 @@ function playPitch(n) {
   const arc  = document.querySelector(".b-arc");
   const reach = document.querySelector(".b-reach");
   const trail = document.querySelector(".bat-trail");
+  const burst = document.querySelector(".contact-burst");
   const armBack = document.getElementById("arm-back");
   const armFront = document.getElementById("arm-front");
-  if (!g || !swing || !body || !arc || !reach || !trail || reduceMotion.matches) return Promise.resolve();
+  if (!g || !swing || !body || !arc || !reach || !trail || !burst || reduceMotion.matches) return Promise.resolve();
   if (g.classList.contains("thrown")) return Promise.resolve();
   g.classList.add("thrown");
 
   const rest = ballRest(g);
   const hit = n === FASTBALL;
+  // a hit ball never reaches its plate-crossing spot; it is met in front of it
+  const land = hit ? CONTACT_POINT : rest;
 
   // the ball, growing as it comes
   const travel = g.animate([
     { transform: `translate(${RELEASE.x}px, ${RELEASE.y}px) scale(${RELEASE.scale})`, opacity: 0.35 },
-    { transform: `translate(${rest.x}px, ${rest.y}px) scale(1)`, opacity: 1 },
+    { transform: `translate(${land.x}px, ${land.y}px) scale(1)`, opacity: 1 },
   ], { duration: TRAVEL_MS, easing: "cubic-bezier(0.55, 0, 0.9, 0.6)", fill: "forwards" });
 
   // the fastball is timed so the barrel arrives with the ball; every off-speed
@@ -1759,13 +1779,38 @@ function playPitch(n) {
     ], { duration: SWING_TOTAL, easing: "cubic-bezier(0.34, 0, 0.18, 1)" });
   }, Math.max(0, swingAt));
 
+  if (!hit) {
+    // he swung and missed, so it is a strike wherever the pitch finished up
+    setTimeout(() => {
+      const call = g.querySelector(".call-out");
+      if (!call) return;
+      call.animate([
+        { transform: "translateY(6px) scale(0.7)", opacity: 0 },
+        { transform: "translateY(0px) scale(1.08)", opacity: 1, offset: 0.18 },
+        { transform: "translateY(-2px) scale(1)", opacity: 1, offset: 0.3 },
+        { transform: "translateY(-10px) scale(1)", opacity: 1, offset: 0.62 },
+        { transform: "translateY(-18px) scale(0.98)", opacity: 0 },
+      ], { duration: 950, easing: "cubic-bezier(0.2, 0.7, 0.3, 1)" });
+    }, TRAVEL_MS);
+  }
+
+  if (hit) {
+    setTimeout(() => {
+      burst.animate([
+        { transform: "scale(0.25) rotate(0deg)", opacity: 0 },
+        { transform: "scale(1.15) rotate(14deg)", opacity: 1, offset: 0.3 },
+        { transform: "scale(1.5) rotate(22deg)", opacity: 0 },
+      ], { duration: 280, easing: "cubic-bezier(0.2, 0.7, 0.4, 1)" });
+    }, TRAVEL_MS);
+  }
+
   // a hidden page does not tick animations, so `finished` can hang forever.
   // Navigation must never wait on the flourish.
   const settled = travel.finished.then(() => {
     if (!hit) { g.classList.remove("thrown"); return; }
     // contact: the ball leaves the frame toward the outfield
     const flight = g.animate([
-      { transform: `translate(${rest.x}px, ${rest.y}px) scale(1)`, opacity: 1 },
+      { transform: `translate(${land.x}px, ${land.y}px) scale(1)`, opacity: 1 },
       { transform: "translate(470px, 40px) scale(0.18)", opacity: 0 },
     ], { duration: FLIGHT_MS, easing: "cubic-bezier(0.2, 0.6, 0.4, 1)" });
     return flight.finished.then(() => { g.classList.remove("thrown"); });
@@ -1780,6 +1825,8 @@ document.querySelectorAll("[data-p]").forEach(el => {
   const go = async ev => {
     ev.preventDefault();
     await playPitch(n);
+    // someone who asked for less motion gets no animation, so no wait either
+    if (!reduceMotion.matches) await new Promise(r => setTimeout(r, HOLD_MS));
     showTab(PITCH_TAB[n]);
     window.scrollTo({ top: 0, behavior: "instant" });
   };
