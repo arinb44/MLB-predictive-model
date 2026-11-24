@@ -6,7 +6,9 @@ on:
 
 jobs:
   pytest:
-    runs-on: ubuntu-latest
+    # shortcut: Python 3.9 builds stop at Ubuntu 24.04; drop this pin when CI moves to
+    # 3.11, the Dockerfile's version, once the requirements are checked there
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
