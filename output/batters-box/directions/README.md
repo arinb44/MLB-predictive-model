@@ -140,3 +140,29 @@ and Teams would need more invention than in A or B.
   so they do not apply. Equal edges were verified in the screenshots instead — and in C's case by
   the checker itself, which measured 174px left and 174px right and failed it only for exceeding
   the kit's 64–120px margin preference.
+
+---
+
+## M7: swing directions (2026-11-24)
+
+All three share one rig, `swing-rig.js`, styled by `swing.css`. The rig is a 3D skeleton keyed to a real swing (stance, load, plant, slot, contact, extension, rollover, finish) and projected from the umpire's eye at (0, 1.35 m, 6 m). Both arms and both legs are solved with two-bone IK. It runs in slow motion at true proportions (×2.1). Each page shows today's swing beside the new one, with a scrubber, a speed control and an eight-frame phase strip.
+
+| | Concept | Looks like |
+|---|---|---|
+| **A — Chalk** (`swing-a.html`) | Today's one-tone silhouette at `--chalk` .62, moving in 3D. A short `--accent` ribbon traces the barrel's real path from slot to rollover. | `shots/m7-strip-a.png` |
+| **B — Strobe** (`swing-b.html`) | A's figure. Ten ghost bats are stamped at fixed instants, then fade after the finish (Marey chronophotograph). | `shots/m7-strip-b.png` |
+| **C — Uniform** (`swing-c.html`) | Solid chalk tones mixed into the ground: helmet 46%, jersey 72%, arms 82%, pants 56%, socks 40%, shoes 30%. Ground-colour belt, full-chalk gloves, A's ribbon. | `shots/m7-strip-c.png` |
+
+Before and after (A): `shots/m7-a-contact-vs-today.png`, `m7-a-finish-vs-today.png`, `m7-a-changeup-vs-today.png`.
+
+**Contrast against `--ground` `#16130f`:**
+- A and B: body 5.74:1; arm over body 9.99:1; handle 9.87:1; barrel 5.25:1.
+- C: jersey 7.36:1, arms 9.25:1, gloves 13.39:1, pants 4.90:1, helmet 3.70:1, socks 3.10:1.
+- **C's shoes are 2.27:1, below 3:1.** If C is chosen, they move to 40% or above.
+
+**Checks:**
+- The grip never has to be pulled in, so both hands stay on the bat throughout.
+- The front leg reaches full length only at the brace.
+- The rig's contact point lands at (278, 217), on the middle pitch (276, 209). It is computed from the rig, not hard-coded.
+
+**Preview note:** the app's browser pane can't read `~/Documents`, so the review pages are served from a synced copy in the session scratchpad (`.claude/launch.json` → `design-review`).

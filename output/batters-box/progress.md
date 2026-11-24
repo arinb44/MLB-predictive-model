@@ -1,7 +1,7 @@
 # Progress — batters-box
 
-**Current phase:** Phase 5 — Final delivery
-**Status:** complete. Everything is pushed, including this design project.
+**Current phase:** Phase 4 — M7, a realistic swing (scope added on resume, 2026-11-24)
+**Status:** waiting for user — approve the M7 commit and push. M7 is written into `src/api/static/index.html` and verified against the running API (25/25 tests). M1–M6 and Phase 5 are complete and pushed.
 
 ## Completed milestones
 - **2026-11-20** — Phase 0: project root confirmed (`/Users/arins/Documents/Projects/BaseballModel`); no earlier design projects found.
@@ -23,15 +23,20 @@
 - **2026-11-20** — Phase 5: `design-spec.md`, `final/tokens.css`, `final/batters-box.svg` written.
 - **2026-11-20** — Follow-up, pushed as `e9ac649`: contact burst on the fastball, "Strike" callout on every miss, and a one-second hold before the section opens.
 - **2026-11-20** — Follow-up, pushed as `1a356e9`: the batter's box animates. Hitter redrawn from the umpire's view with stacked legs; five-layer swing rig (hips, shoulders, bat arc, arm extension, barrel trail); dotted balls hidden until a pitch is thrown; 900ms travel.
+- **2026-11-24** — Resumed for M7 (a realistic swing). Root and repository re-confirmed. Stale record fixed: `plan.md` status set to approved on 2026-11-20, open question 2 struck. Current swing captured frame by frame into `shots/m7-before-*.png`. M7 added to `designAgent.md`; addendum appended to `plan.md`.
+- **2026-11-24** — M7 addendum approved (slow motion ×2.1). M7a built: `directions/swing-rig.js`, `swing.css`, `swing-{a,b,c}.html`; strips and before/after shots in `shots/m7-*`. Notes in `directions/README.md`.
+- **2026-11-24** — User chose **C — Uniform**. Round 5 built in `iterations/round-5/`: refined rig, self-check, `build.py`, candidate `index.html`, scrub page. Checked at 1280/768/375 and with reduced motion; shoes raised to 3.10:1. Notes in `iterations/round-5/NOTES.md`.
+- **2026-11-24** — Round 5 approved, including the new still pose. The user then asked for spinning balls with no numbers or dotted outline; built as round 6 in `iterations/round-6/` on top of round 5.
+- **2026-11-24** — Round 6 approved. **M7c:** `iterations/round-6/build.py` wrote `src/api/static/index.html` (1930 → 2109 lines). Verified against the running API: fastball swung and met with the burst, changeup swung early with "Strike", sections open, stance restored, seams spin, no console errors; 25/25 tests pass. `design-spec.md` gained §10; `final/batters-box.svg` re-exported from the page by `iterations/round-6/export-svg.js` (stance matches the live page path for path).
 - **2026-11-20** — Committed and **pushed** to `arinb44/MLB-predictive-model` as `bfc6f4a` on `main`. The first push was rejected because this checkout's `main` was a parallel rewrite of the remote's history (same 11 subjects, different hashes and dates, identical trees); the user rebased the single unpushed commit onto `origin/main`, which resolved it. 25/25 tests pass on the rebased commit.
 
 ## Next step
-None outstanding. The redesign, the animation and this design project are all
-on `main` at `arinb44/MLB-predictive-model`.
+Show the commit message and files; commit and push to `arinb44/MLB-predictive-model` `main` only on
+approval (no `.claude/`). Optional: remove the 1–6 on the tiles too, if the user meant those.
 
 ## Open questions
 1. ~~Should `output/` be committed?~~ — **committed and pushed** as `3b7bbe0`, with `.profile/` and `.taste-skill/` gitignored. `.claude/` stays local.
-2. Which GitHub repository should commits go to? (Existing remote: `origin https://github.com/arinb44/MLB-predictive-model.git`.) Nothing is committed until answered.
+2. ~~Which GitHub repository should commits go to?~~ — **`arinb44/MLB-predictive-model`, `main`** (decision 21; re-confirmed 2026-11-24).
 3. ~~Approve the head-to-head route~~ — **approved**; contract in `iterations/round-4/head-to-head-endpoint.md`, implemented at M6.
 4. SVG assets inlined into `index.html` (no static mount exists), or add `StaticFiles` to `src/api/main.py`? The same answer decides whether the Model page can show `reports/shap_*.png`.
 5. Keep `design-spec.md` as a record in `output/`, or skip it?
@@ -39,4 +44,4 @@ on `main` at `arinb44/MLB-predictive-model`.
 7. Restyle the "Calibrating…" bar and the error state now, or in a later round?
 8. The Predictions subtitle says only team form, Elo and the starter proxy drive the number; the README and `get_feature_columns` describe a wider set (rest, bullpen fatigue, park factors, pitcher identity). Which is accurate?
 
-**Last updated:** 2026-11-20
+**Last updated:** 2026-11-24

@@ -34,6 +34,7 @@ Turn a functional but generic dark-slate dashboard into a site with a memorable 
   6. **Matchups** (new page) — scope to be settled in the plan.
   7. **About the data** (new page) — sources, what is and isn't a model input.
   - Plus a wordmark: name candidates to be presented with the design directions; nothing chosen without the user picking it.
+  8. **The batter's swing** (M7, added 2026-11-24) — replace the five-layer CSS swing on the home page with one that moves like a real hitter: load, stride, hips before hands, bat lag, contact out in front, a full follow-through that stays finished.
 - **Users / audience:** recruiters and repo visitors first; baseball fans using the predictor second.
 - **Priorities:** a striking first screen, then clarity. Honest about what the model actually uses (team form, Elo, trailing starter proxy) versus what is display-only context.
 
@@ -67,6 +68,7 @@ Turn a functional but generic dark-slate dashboard into a site with a memorable 
   - Therefore **SVG assets are inlined into the page**, not shipped as separate files. Adding `StaticFiles` would mean a backend change and a Dockerfile check, and is out of scope unless the user approves it.
   - Fonts come from Google Fonts over `<link>`, as Barlow Condensed does today. Any new face must be free for web use with no purchase.
   - No build step, no npm, no framework. Hand-written CSS and vanilla JS only.
+  - The swing (M7) may be driven by a small vanilla-JS rig on `requestAnimationFrame` instead of CSS keyframes; still no library.
 
 ## Asset Locations
 - **Final assets go to:** `src/api/static/index.html` — SVGs inlined, CSS in the existing `<style>` block. Nothing is written there until the design is approved and the path is confirmed.
@@ -85,6 +87,7 @@ The work is done when:
 - Every token is defined once in `:root`, and the reported contrast ratios meet WCAG 2.2 AA.
 - The user has picked the name and wordmark, or decided against one.
 - The user has approved the final design.
+- **M7:** the swing reads as a real swing at a glance — weight shift and stride, hips firing before the hands, the barrel lagging then whipping through, contact out in front of the plate, a finish wrapped over the front shoulder — and the user has approved it.
 
 ## Behavior Rules
 1. Always produce a written plan and get user approval before designing.

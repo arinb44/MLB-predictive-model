@@ -1,0 +1,71 @@
+/* M7 swing directions — review pages only, never shipped. Tokens from final/tokens.css. */
+:root {
+  --ground: #16130f; --panel: #1e1a15; --rule: #352d24;
+  --text: #f1e8da; --muted: #a99b87; --chalk: #e6dac3; --accent: #dd6348;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "Barlow", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--text); font: 16px/1.45 var(--body); padding: 28px 32px 48px; }
+header { max-width: 980px; margin-bottom: 20px; }
+.eyebrow { font: 700 13px var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin: 0 0 6px; }
+h1 { font: 700 44px/1 var(--display); margin: 0 0 8px; }
+.lede { color: var(--muted); margin: 0 0 12px; max-width: 64ch; }
+nav a { color: var(--muted); margin-right: 14px; font: 600 14px var(--display); letter-spacing: .12em; text-transform: uppercase; text-decoration: none; }
+nav a[aria-current] { color: var(--text); border-bottom: 2px solid var(--accent); }
+
+.stage { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); max-width: 980px; }
+.stage figure { margin: 0; background: var(--ground); padding: 12px; }
+.stage figcaption { font: 600 13px var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.stage svg { display: block; width: 100%; height: auto; }
+.stage.solo figure.today { display: none; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; max-width: 980px; margin: 14px 0 6px; }
+.controls button, .controls select { background: var(--panel); color: var(--text); border: 1px solid var(--rule); font: 600 14px var(--display); letter-spacing: .08em; text-transform: uppercase; padding: 8px 12px; cursor: pointer; }
+.controls button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.controls input[type=range] { flex: 1 1 260px; accent-color: var(--accent); }
+.readout { font: 500 14px var(--display); letter-spacing: .06em; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 34ch; }
+.readout b { color: var(--text); }
+label.toggle { color: var(--muted); font: 600 14px var(--display); letter-spacing: .08em; text-transform: uppercase; }
+
+.strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); max-width: 980px; margin-top: 18px; }
+.strip figure { margin: 0; background: var(--ground); padding: 6px 4px 8px; text-align: center; }
+.strip svg { width: 100%; height: auto; display: block; }
+.strip figcaption { font: 600 12px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.notes { max-width: 980px; margin-top: 22px; color: var(--muted); }
+.notes h2 { font: 700 13px var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin: 18px 0 6px; }
+.notes ul { margin: 0; padding-left: 18px; }
+
+/* the diagram, as on the home page */
+.z-cell { fill: none; stroke: var(--rule); stroke-width: 1; }
+.z-edge { fill: none; stroke: var(--chalk); stroke-width: 2.5; }
+.z-chalk { fill: none; stroke: var(--chalk); stroke-width: 1.5; opacity: .3; }
+.plate-shape { fill: none; stroke: var(--chalk); stroke-width: 2; }
+.mark-dot { fill: none; stroke: var(--chalk); stroke-width: 2; stroke-dasharray: 3 4.5; stroke-linecap: round; }
+.mark-num { fill: var(--chalk); font: 700 17px var(--display); text-anchor: middle; }
+.mark-seam { fill: none; stroke: var(--accent); stroke-width: 1.6; opacity: .85; }
+.call-out { fill: var(--accent); font: 700 16px var(--display); letter-spacing: .14em; text-transform: uppercase; text-anchor: middle; }
+.burst-rays { fill: var(--accent); }
+.burst-core { fill: var(--chalk); }
+
+/* the new rig */
+.b-dim { opacity: .62; }
+.r-limb { fill: none; stroke: var(--tone, var(--chalk)); stroke-linecap: round; stroke-linejoin: round; }
+.r-solid { fill: var(--tone, var(--chalk)); stroke: var(--tone, var(--chalk)); stroke-linejoin: round; }
+.r-handle { fill: var(--chalk); opacity: .85; }
+.r-barrel { fill: var(--accent); }
+.r-trail { fill: var(--accent); }
+.r-belt { fill: none; stroke: var(--ground); stroke-linecap: round; }
+
+/* today's rig, copied from index.html for the comparison */
+.b-fill { fill: var(--chalk); }
+.b-stroke { stroke: var(--chalk); fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.bat-trail { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; opacity: 0; }
+.bat-handle { fill: var(--chalk); opacity: .85; }
+.bat-barrel { fill: var(--accent); }
+.batter  { transform-box: view-box; transform-style: preserve-3d; }
+.b-swing { transform-box: view-box; transform-origin: 123px 160px; transform-style: preserve-3d; }
+.b-arc   { transform-box: view-box; transform-origin: 123px 120px; }
+.b-reach { transform-box: view-box; }
+.b-body  { transform-box: view-box; transform-origin: 123px 200px; transform-style: preserve-3d; }
+.contact-burst { display: none; }   /* today's own burst; the review draws one for both */

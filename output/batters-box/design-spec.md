@@ -2,6 +2,7 @@
 
 **Prepared by:** Strike Zone (`output/batters-box/designAgent.md`)
 **Date:** 2026-11-20
+**Updated:** 2026-11-24, M7: a realistic swing and spinning balls (§10)
 **Status:** Final
 
 ## 1. Overview
@@ -38,7 +39,7 @@ quietest, and quiet works against a portfolio-first brief.
 | `--rule` | `#352d24` | Hairlines | 1.37 (decorative) |
 | `--text` | `#f1e8da` | Body | 15.25 / 14.25 |
 | `--muted` | `#a99b87` | Labels, captions | 6.81 / 6.36 |
-| `--chalk` | `#e6dac3` | Diagram lines, the batter | 13.39 / 12.51 |
+| `--chalk` | `#e6dac3` | Diagram lines, balls, the batter's gloves; his other parts mix it into the ground (§10) | 13.39 / 12.51 |
 | `--accent` | `#dd6348` | Red pencil: the one accent | 5.25 / 4.90 |
 | `--accent-ink` | `#1a0d08` | Text on an accent fill | 5.39 on accent |
 | `--away` | `#dd6348` | Away side | 5.25 / 4.90 |
@@ -73,7 +74,7 @@ Seven views, all in `src/api/static/index.html`, switched by `showTab()` with no
 
 | View | id | Notes |
 |---|---|---|
-| Home | `tab-home` | Batter's box; six pitch tiles cross-highlight their mark in the zone on hover and focus (pure CSS `:has()`, no JS) |
+| Home | `tab-home` | Batter's box; each of the six pitch tiles throws its pitch at the batter, who swings (§10), then opens its section after a one-second hold. Balls are hidden until thrown |
 | Predictions | `tab-predict` | Unchanged layout, controls and `/predict` payload; matchup card keeps its own design, corners squared |
 | Players | `tab-players` | Unchanged chart logic; restyled by token alias alone |
 | Teams | `tab-teams` | As above, plus ruled tile grid |
@@ -81,7 +82,7 @@ Seven views, all in `src/api/static/index.html`, switched by `showTab()` with no
 | Matchups | `tab-matchups` | New. Season series and every meeting, from `GET /head-to-head/{a}/{b}` |
 | About the data | `tab-about` | New. Sources, model inputs vs context, caveats |
 
-States covered: hover (tiles lift 2px, pitch mark lights), focus (2px inset accent ring plus a
+States covered: hover (tiles lift 2px), focus (2px inset accent ring plus a
 transparent outline so forced-colors keeps a ring), loading (the existing calibrating bar;
 Matchups shows "Loading…"), empty (Matchups when two teams have not met), error (Matchups when the
 fetch fails).
@@ -94,7 +95,8 @@ existing CSS and chart JS already use — `--bg`, `--border`, `--grid`, `--text-
 `--radius` — which is why the hand-written SVG chart code needed no rewrite.
 
 The batter's-box diagram is inline SVG (no static mount exists to serve a file); a standalone copy
-is `output/batters-box/final/batters-box.svg`.
+is `output/batters-box/final/batters-box.svg`, exported from the page as it draws on load by
+`iterations/round-6/export-svg.js`.
 
 ## 6. Accessibility & Responsiveness
 
@@ -104,29 +106,34 @@ is `output/batters-box/final/batters-box.svg`.
 - **Keyboard:** every view reachable, tab order follows reading order, visible focus everywhere.
 - **Breakpoints:** 1280 / 1024 / 820 / 640 / 560 / 390. No horizontal overflow at 390 (measured:
   `scrollWidth === clientWidth === 390`).
-- **Reduced motion:** all transitions disabled under `prefers-reduced-motion: reduce`.
+- **Reduced motion:** all transitions disabled under `prefers-reduced-motion: reduce`; no pitch is
+  thrown and the batter doesn't swing, so a tile opens its section at once.
 - **Colour independence:** the probability bar prints its percentages inside both segments.
 
 ## 7. Files & Links
 
 **Project source tree (changed):**
-- `src/api/static/index.html` — tokens, seven views, restyle, tab wiring, scatter opacity, prob-bar labels
+- `src/api/static/index.html` — tokens, seven views, restyle, tab wiring, scatter opacity, prob-bar labels;
+  at M7 the swing rig and the spinning balls
 - `src/api/main.py` — `GET /head-to-head/{team_a}/{team_b}`
 - `tests/test_api.py` — title assertion updated; two tests added for the new route
 
 **Design project (`output/batters-box/`):** `designAgent.md`, `plan.md`, `progress.md`,
-`decisions.md`, `design-spec.md`, `directions/` (3 directions + README), `iterations/round-1…4`
-(each with NOTES.md), `final/tokens.css`, `final/batters-box.svg`, `shots/`.
+`decisions.md`, `design-spec.md`, `directions/` (3 directions, 3 swing directions + README),
+`iterations/round-1…6` (each with NOTES.md; round 5 holds the rig, its self-check and `build.py`,
+round 6 the balls and the SVG export), `final/tokens.css`, `final/batters-box.svg`, `shots/`.
 
 No Figma files.
 
 ## 8. Decision Log
 
-Nineteen decisions in `decisions.md`. The ones that shaped the result: sibling-not-clone identity;
+Thirty-two decisions in `decisions.md`. The ones that shaped the result: sibling-not-clone identity;
 home page plus restyle (not a full rebuild); six pitches; the name **Full Count**; Direction A;
 red/blue for home and away; keeping the matchup card and squaring only its corners; aliasing
 tokens rather than renaming; `fill-opacity` 0.85 for scatter dots; Matchups as head-to-head
-history; approving one new read-only route; real MLB logos.
+history; approving one new read-only route; real MLB logos. At M7: a rig at true proportions in slow
+motion (×2.1) rather than real time; direction C, Uniform; the new still pose; spinning balls with no
+numbers or dotted outline.
 
 ## 9. Known Issues & Next Steps
 
@@ -141,4 +148,49 @@ history; approving one new read-only route; real MLB logos.
 - **Matchups covers one season** (the latest in `game_log.csv`, currently 2024). Multi-season
   history would widen the route.
 - **The Compare (scatter) view** was never mocked; it inherits the tokens and the dot-opacity fix.
-- Nothing is committed. The repository for commits is still unconfirmed.
+- **The tiles still carry the numbers 1–6.** The balls lost theirs at M7 (decision 31), so nothing
+  in the diagram points back to a tile any more. Remove the tile numbers too if the pairing isn't
+  wanted.
+- **Seams sit at 2.55:1 against the ball.** Decoration on an `aria-hidden` element; passing would
+  mean leaving `--accent`.
+
+## 10. The swing (M7, 2026-11-24)
+
+The five-layer CSS swing was replaced by a small vanilla-JS rig, `BatterRig` in `index.html` (source:
+`iterations/round-5/swing-rig.js`), in direction **C, Uniform**.
+
+- **Model.** A 3D skeleton at real proportions (thigh and shin 0.45 m, upper arm 0.29, forearm
+  0.32, a 34-inch bat with the sweet spot 0.70 m from the knob), projected in perspective from the
+  umpire's eye, 1.35 m up and 6 m back. Two-bone IK places knees and elbows; both hands stay on the
+  bat. The torso is the hull of stacked elliptical rings, so it turns instead of sliding. Body,
+  arms and bat are depth-sorted every frame.
+- **Swing.** Eight keyframes in real seconds, contact at 0: stance −0.43, load −0.27 (hands back,
+  front foot up), plant −0.16 (stride down), slot −0.075 (barrel drops behind the hands),
+  contact 0 (front leg braced, hips leading the shoulders, barrel through the zone), extension
+  0.05, rollover 0.12, finish 0.26 (bat over the front shoulder). Monotone cubic interpolation per channel, so nothing
+  overshoots.
+- **Timing.** Slowed ×2.1 at true proportions: a 430 ms swing takes 900 ms, so contact lands when
+  the fastball does, 900 ms after release. The same swing runs on every pitch; on the five that
+  miss it starts early and the barrel is through the zone about 170 ms before the ball, which is how
+  a hitter misses off-speed. He holds the finish until the section opens; `showTab()` puts him back
+  in his stance.
+- **Look.** Each part is one solid tone of `--chalk` mixed into `--ground` with `color-mix()`, so
+  no new tokens: shoes 40%, helmet 46%, socks 48%, pants 56%, jersey 72%, arms 82%; gloves and
+  handle in chalk, barrel in accent, a ground-coloured belt. Solid tones let overlapping parts cover
+  each other instead of brightening. A short accent ribbon trails the barrel from the slot to the
+  rollover only.
+- **Contrast** on `--ground`: gloves 13.39, arms 9.25, jersey 7.36, barrel 5.25, pants 4.90, socks
+  3.92, helmet 3.70, shoes 3.10. Every part clears 3:1 (SC 1.4.11).
+- **Balls.** Solid chalk (13.39:1) with no number and no dotted outline. The seam is the real curve
+  on a sphere, turned each frame about the pitch's own spin axis and drawn where it faces us:
+  backspin on the four-seam, gyro on the slider and cutter, topspin on the curve, arm-side tilt on
+  the changeup, sidespin on the sinker. Relative rates are real (1,750–2,500 rpm), slowed so a 2,300 rpm pitch
+  turns 2.2 times on its way in.
+- **Self-check.** `iterations/round-5/check-rig.js` samples the swing every 2 ms: hands on the bat,
+  legs reach their feet, every point inside the viewBox, contact inside the zone, the swing clock
+  never runs backwards, the fastball is met at 900 ms and misses are early. `build.py` runs it
+  before it writes.
+- **Verified** against the running API: the swing runs; the fastball is met at (277.7, 216.5) with
+  the burst; "Strike" shows on a miss; the section opens and the stance returns; no console errors;
+  25/25 tests pass. Also checked at 1280, 768 and 375 and with reduced motion.
+

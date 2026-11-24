@@ -336,8 +336,6 @@
   .z-edge { fill: none; stroke: var(--chalk); stroke-width: 2.5; }
   .z-chalk { fill: none; stroke: var(--chalk); stroke-width: 1.5; opacity: .3; }
   .plate-shape { fill: none; stroke: var(--chalk); stroke-width: 2; }
-  .b-dim { opacity: .62; }          /* one opacity per mass, so overlaps show no seam */
-  .b-fill { fill: var(--chalk); }
   .call-out {
     fill: var(--accent); font-family: var(--display); font-weight: 700; font-size: 16px;
     letter-spacing: 0.14em; text-transform: uppercase; text-anchor: middle;
@@ -346,23 +344,19 @@
   .contact-burst { opacity: 0; transform-box: fill-box; transform-origin: center; }
   .burst-rays { fill: var(--accent); }
   .burst-core { fill: var(--chalk); }
-  .bat-trail { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; opacity: 0; }
-  .bat-handle { fill: var(--chalk); opacity: .85; }
-  .bat-barrel { fill: var(--accent); }
-  .b-stroke { stroke: var(--chalk); fill: none; stroke-linecap: round; stroke-linejoin: round; }
-  .batter  { transform-box: view-box; transform-style: preserve-3d; }
-  .b-swing { transform-box: view-box; transform-origin: 123px 160px; transform-style: preserve-3d; }
-  .b-arc   { transform-box: view-box; transform-origin: 123px 120px; }
-  .b-reach { transform-box: view-box; }
-  .b-body  { transform-box: view-box; transform-origin: 123px 200px; transform-style: preserve-3d; }
+  /* the batter: each part takes a solid --tone, chalk mixed into the ground,
+     so overlapping parts cover each other instead of brightening */
+  .r-limb  { fill: none; stroke: var(--tone, var(--chalk)); stroke-linecap: round; stroke-linejoin: round; }
+  .r-solid { fill: var(--tone, var(--chalk)); stroke: var(--tone, var(--chalk)); stroke-linejoin: round; }
+  .r-handle { fill: var(--chalk); opacity: .85; }
+  .r-barrel, .r-trail { fill: var(--accent); }
+  .r-belt { fill: none; stroke: var(--ground); stroke-linecap: round; }
 
   /* the baseballs are outlines, not discs */
-  .mark-dot { fill: none; stroke: var(--chalk); stroke-width: 2; stroke-dasharray: 3 4.5; stroke-linecap: round; }
-  .mark-num { fill: var(--chalk); font-family: var(--display); font-weight: 700; font-size: 17px; text-anchor: middle; font-variant-numeric: tabular-nums; transition: fill .18s; }
-  .mark-seam { fill: none; stroke: var(--accent); stroke-width: 1.6; opacity: .85; }
+  /* a thrown ball: solid chalk, its seams redrawn each frame as it spins */
+  .ball-body { fill: var(--chalk); }
+  .ball-seam { fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .ball { cursor: pointer; transform-box: view-box; transform-origin: 0 0; opacity: 0; }
-  .ball:focus-visible { outline: none; }
-  .ball:focus-visible .mark-dot { stroke: var(--accent); stroke-width: 3; }
   .ball.thrown { pointer-events: none; }
   .pitches { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
   .pitches li { background: var(--ground); }
@@ -484,56 +478,15 @@
 
     <div class="box">
       <figure class="plate">
-        <svg viewBox="12 20 350 360" role="img" aria-label="A right-handed batter in the box beside home plate. The strike zone is drawn as a three-by-three grid from the letters to the knees, with six numbered pitches: one down the middle, one upper third, one low inside, one on the low outside corner, one off the plate up and in, and one in the dirt.">
+        <svg viewBox="12 20 350 360" role="img" aria-label="A right-handed batter in the box beside home plate. The strike zone is drawn as a three-by-three grid from the letters to the knees, with six pitches: one down the middle, one upper third, one low inside, one on the low outside corner, one off the plate up and in, and one in the dirt.">
           <!-- the batter's box, in chalk, under the batter's feet -->
           <path class="z-chalk" d="M36 326 L196 326 L214 372 L18 372 Z"/>
 
-          <!-- batter: a filled silhouette, in profile, facing the zone.
-               The body stays put; .b-swing (arms + bat) rotates about the
-               shoulder when a pitch is thrown. -->
-          <g class="batter">
-            <g class="b-body b-dim">
-              <!-- umpire's view: his back is to us, head turned to pick the ball up -->
-              <path class="b-fill" d="M100 74 C100 55 110 45 123 45 C137 45 147 56 147 74 C147 88 140 97 130 99 L114 99 C104 97 100 86 100 74 Z"/>
-              <path class="b-fill" d="M143 68 C152 67 162 70 164 75 C162 80 151 82 142 80 Z"/>
-              <path class="b-fill" d="M112 95 L134 95 L138 116 L110 116 Z"/>
-              <path class="b-fill" d="M100 116 C94 128 92 148 96 168 C98 182 100 192 102 202 L146 202 C148 190 151 176 153 160 C156 140 152 126 146 114 Z"/>
-              <!-- the stance runs toward the pitcher, so from behind the legs
-                   stack front-to-back: the far one peeks out past the near one -->
-              <path class="b-stroke" d="M133 200 L139 252" stroke-width="26"/>
-              <path class="b-stroke" d="M139 252 L143 310" stroke-width="19"/>
-              <path class="b-fill" d="M134 306 L160 304 C170 310 174 320 172 326 L132 326 Z"/>
-              <path class="b-stroke" d="M118 202 L113 254" stroke-width="29"/>
-              <path class="b-stroke" d="M113 254 L108 316" stroke-width="21"/>
-              <path class="b-fill" d="M92 314 L122 316 L124 332 L86 332 C86 323 88 315 92 314 Z"/>
-            </g>
-            <g class="b-swing">
-              <!-- the arc the barrel travels, drawn in behind it so the path
-                   is readable at speed. Centre (123,120), r110, the same
-                   circle the barrel tip rides. -->
-              <path class="bat-trail" d="M70.5 23.3 A110 110 0 1 0 232.9 115.2"/>
-              <g class="b-arc">
-                <!-- .b-swing turns about the spine (hips and shoulders opening);
-                     .b-arc drops the bat through the zone -->
-                <g class="b-dim">
-                  <!-- the elbows straighten through contact; .b-reach carries the
-                       hands and the bat out with them -->
-                  <path class="b-stroke b-arm" id="arm-back" d="M108 118 L100 134 L94 102" stroke-width="15"/>
-                  <path class="b-stroke b-arm" id="arm-front" d="M140 120 L130 136 L98 106" stroke-width="15"/>
-                </g>
-                <g class="b-reach">
-                  <circle class="b-fill b-dim" cx="96" cy="102" r="8"/>
-                  <!-- the bat sits in front of the body at full strength, and the
-                       barrel is its own colour so you can follow it through -->
-                  <polygon class="bat-handle" points="92.4,104.7 99.6,99.3 79.1,66.5 68.8,73.6"/>
-                  <polygon class="bat-barrel" points="68.8,73.6 79.1,66.5 54.1,26.3 39.9,35.7"/>
-                  <!-- contact burst, parented to the bat so it lands on the
-                       barrel whatever the rig is doing -->
-                  <g class="contact-burst" transform="translate(47,31)"><g class="burst-rays"><polygon points="7.0,2.6 25.0,0.0 7.0,-2.6"/><polygon points="3.1,6.8 17.7,17.7 6.8,3.1"/><polygon points="-2.6,7.0 0.0,25.0 2.6,7.0"/><polygon points="-6.8,3.1 -17.7,17.7 -3.1,6.8"/><polygon points="-7.0,-2.6 -25.0,0.0 -7.0,2.6"/><polygon points="-3.1,-6.8 -17.7,-17.7 -6.8,-3.1"/><polygon points="2.6,-7.0 -0.0,-25.0 -2.6,-7.0"/><polygon points="6.8,-3.1 17.7,-17.7 3.1,-6.8"/></g><circle class="burst-core" r="6.5"/></g>
-                </g>
-              </g>
-            </g>
-          </g>
+          <!-- batter: drawn on load by BatterRig, a 3D skeleton seen from the
+               umpire's eye, and swung when a pitch is thrown -->
+          <g class="batter"></g>
+          <!-- contact burst; script moves it onto the rig's contact point -->
+          <g class="burst-at"><g class="contact-burst"><g class="burst-rays"><polygon points="7.0,2.6 25.0,0.0 7.0,-2.6"/><polygon points="3.1,6.8 17.7,17.7 6.8,3.1"/><polygon points="-2.6,7.0 0.0,25.0 2.6,7.0"/><polygon points="-6.8,3.1 -17.7,17.7 -3.1,6.8"/><polygon points="-7.0,-2.6 -25.0,0.0 -7.0,2.6"/><polygon points="-3.1,-6.8 -17.7,-17.7 -6.8,-3.1"/><polygon points="2.6,-7.0 -0.0,-25.0 -2.6,-7.0"/><polygon points="6.8,-3.1 17.7,-17.7 3.1,-6.8"/></g><circle class="burst-core" r="6.5"/></g></g>
 
           <!-- home plate, lying on the ground line -->
           <path class="plate-shape" d="M238 350 L314 350 L314 359 L276 369 L238 359 Z"/>
@@ -555,40 +508,28 @@
           <!-- six pitches. Each ball is drawn at the origin and placed by its
                transform, so the pitch animation only has to move the group. -->
           <g id="m1" class="ball" data-p="1" transform="translate(276,209)" aria-hidden="true">
-            <circle class="mark-dot" r="16"/>
-            <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
-            <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
-            <text class="mark-num" y="6">1</text>
+            <circle class="ball-body" r="16"/>
+            <path class="ball-seam"/>
           <text class="call-out" y="-28">Strike</text></g>
           <g id="m2" class="ball" data-p="2" transform="translate(334,250)" aria-hidden="true">
-            <circle class="mark-dot" r="16"/>
-            <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
-            <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
-            <text class="mark-num" y="6">2</text>
+            <circle class="ball-body" r="16"/>
+            <path class="ball-seam"/>
           <text class="call-out" x="-8" y="-28">Strike</text></g>
           <g id="m3" class="ball" data-p="3" transform="translate(248,171)" aria-hidden="true">
-            <circle class="mark-dot" r="16"/>
-            <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
-            <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
-            <text class="mark-num" y="6">3</text>
+            <circle class="ball-body" r="16"/>
+            <path class="ball-seam"/>
           <text class="call-out" y="-28">Strike</text></g>
           <g id="m4" class="ball" data-p="4" transform="translate(288,300)" aria-hidden="true">
-            <circle class="mark-dot" r="16"/>
-            <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
-            <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
-            <text class="mark-num" y="6">4</text>
+            <circle class="ball-body" r="16"/>
+            <path class="ball-seam"/>
           <text class="call-out" y="-28">Strike</text></g>
           <g id="m5" class="ball" data-p="5" transform="translate(236,247)" aria-hidden="true">
-            <circle class="mark-dot" r="16"/>
-            <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
-            <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
-            <text class="mark-num" y="6">5</text>
+            <circle class="ball-body" r="16"/>
+            <path class="ball-seam"/>
           <text class="call-out" y="-28">Strike</text></g>
           <g id="m6" class="ball" data-p="6" transform="translate(194,176)" aria-hidden="true">
-            <circle class="mark-dot" r="16"/>
-            <path class="mark-seam" d="M-9 -11 Q-14 0 -9 11"/>
-            <path class="mark-seam" d="M9 -11 Q14 0 9 11"/>
-            <text class="mark-num" y="6">6</text>
+            <circle class="ball-body" r="16"/>
+            <path class="ball-seam"/>
           <text class="call-out" y="-28">Strike</text></g>
         </svg>
       </figure>
@@ -1163,6 +1104,7 @@ function showTab(name) {
   hideTip();   // a chart tooltip left open would hang over the next view
   // clear any ball left on the diagram, so home starts empty again
   document.querySelectorAll(".ball").forEach(b => b.getAnimations().forEach(a => a.cancel()));
+  resetBatter();   // and the batter back in his stance
   document.querySelectorAll("section.tab").forEach(s => s.classList.toggle("active", s.id === `tab-${name}`));
   document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
   if (location.hash !== `#${name}`) history.replaceState(null, "", `#${name}`);
@@ -1671,15 +1613,350 @@ const FASTBALL = 1;
 const RELEASE = { x: 276, y: 196, scale: 0.12 };
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-const TRAVEL_MS = 900, SWING_TOTAL = 900, FLIGHT_MS = 520;
+const TRAVEL_MS = 900, FLIGHT_MS = 520;
 // a beat after the pitch finishes, so the contact lands before the page moves
 const HOLD_MS = 1000;
-// where in the swing the barrel is in the zone — the fastball is timed to meet it
-const CONTACT_FRAC = 0.58;
-// Where the barrel actually ends up at contact, measured off the live rig
-// rather than derived — the perspective turn moves it well past where the
-// flat trigonometry says it should be.
-const CONTACT_POINT = { x: 264, y: 239 };
+
+// The batter: a 3D skeleton keyed to the phases of a real swing, projected
+// from the umpire's position the home diagram is drawn from.
+const BatterRig = (() => {
+
+/* ================= scene ================= */
+// metres; x toward the plate, y up, z toward the camera (the pitcher is at -z)
+const CAM = { x: 0, y: 1.35, z: 6.0 }, FOCAL = 918, OX = 276, OY = 121.5;
+function project(p) {
+  const s = FOCAL / (CAM.z - p[2]);
+  return [OX + s * (p[0] - CAM.x), OY - s * (p[1] - CAM.y), s];
+}
+const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const mul = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const len = a => Math.hypot(a[0], a[1], a[2]);
+const unit = a => mul(a, 1 / (len(a) || 1));
+const lerp3 = (a, b, k) => add(a, mul(sub(b, a), k));
+const UP = [0, 1, 0];
+const rad = d => d * Math.PI / 180;
+// yaw 0 faces the plate (+x); +90 faces the pitcher (-z)
+const heading = deg => [Math.cos(rad(deg)), 0, -Math.sin(rad(deg))];
+// the body's right-hand side at that yaw (toward the camera at 0)
+const rightOf = deg => [Math.sin(rad(deg)), 0, Math.cos(rad(deg))];
+const perpTo = (v, n) => unit(sub(v, mul(n, dot(v, n))));
+
+/* ================= the swing =================
+   Real seconds, contact at 0. A right-handed hitter facing the plate.
+   p* pelvis, t* torso (yaw, forward lean, side tilt toward the back side),
+   h* the grip, az/el the bat's direction, f* front foot, b* back foot
+   (yaw of the toes, heel lift in degrees). Hips lead the shoulders, the
+   shoulders lead the hands, the barrel comes last. */
+const SWING = [
+  { t:  -0.43, name: "Stance",    px: -1.05, py: 0.90, pz:  0.00, pyaw:  -5, tyaw: -15, lean: 22, tilt:  0, hx: -0.78, hy: 1.40, hz:  0.20, az: -160, el:  36, fz: -0.34, fl:   0, fyaw: 15, fh:  0, bz: 0.32, byaw:  5, bh:  0 },
+  { t:  -0.27, name: "Load",      px: -1.06, py: 0.89, pz:  0.05, pyaw: -18, tyaw: -32, lean: 22, tilt: -3, hx: -0.84, hy: 1.43, hz:   0.3, az: -166, el:  38, fz: -0.37, fl: 0.1, fyaw:  5, fh: 12, bz: 0.32, byaw:  5, bh:  0 },
+  { t:  -0.16, name: "Plant",     px: -1.05, py: 0.87, pz: -0.07, pyaw:  -6, tyaw: -28, lean: 23, tilt:  5, hx: -0.84, hy: 1.40, hz:  0.25, az: -160, el:  35, fz: -0.60, fl:   0, fyaw: 25, fh:  0, bz: 0.32, byaw:  8, bh:  6 },
+  { t: -0.075, name: "Slot",      px: -1.00, py: 0.86, pz: -0.11, pyaw:  30, tyaw:   5, lean: 22, tilt: 20, hx: -0.78, hy: 1.15, hz:  0.10, az: -118, el:   8, fz: -0.60, fl:   0, fyaw: 35, fh:  0, bz: 0.32, byaw: 25, bh: 22 },
+  { t:      0, name: "Contact",   px: -0.98, py: 0.89, pz: -0.13, pyaw:  55, tyaw:  40, lean: 22, tilt: 28, hx: -0.50, hy: 0.94, hz: -0.30, az:   28, el: -25, fz: -0.60, fl:   0, fyaw: 45, fh:  0, bz: 0.30, byaw: 50, bh: 45 },
+  { t:   0.05, name: "Extension", px: -0.98, py:  0.9, pz: -0.14, pyaw:  70, tyaw:  75, lean: 18, tilt: 24, hx: -0.55, hy: 1.03, hz: -0.50, az:   85, el:  -5, fz: -0.60, fl:   0, fyaw: 45, fh:  0, bz: 0.29, byaw: 65, bh: 55 },
+  { t:   0.12, name: "Rollover",  px: -0.98, py: 0.88, pz: -0.14, pyaw:  82, tyaw: 105, lean: 15, tilt: 14, hx: -0.82, hy: 1.30, hz: -0.50, az:  170, el:  20, fz: -0.60, fl:   0, fyaw: 45, fh:  0, bz: 0.28, byaw: 75, bh: 60 },
+  { t:   0.26, name: "Finish",    px: -0.98, py: 0.90, pz: -0.14, pyaw:  88, tyaw: 125, lean: 10, tilt:  5, hx: -1.22, hy: 1.55, hz: -0.32, az:  255, el: -35, fz: -0.60, fl:   0, fyaw: 45, fh:  0, bz: 0.28, byaw: 85, bh: 65 },
+];
+const BODY = { hip: 0.09, thigh: 0.45, shin: 0.45, ankle: 0.08, spine: 0.50, shoulder: 0.19,
+               upper: 0.29, fore: 0.32, bat: 0.86, grip: 0.06, hands: 0.045 };
+const FOOT_X = -0.87;                     // ball of the foot; the ankle sits under the hip
+const SWEET = 0.70;                       // contact spot, from the knob
+const T0 = SWING[0].t;                    // the click: ball release on the fastball
+const EARLY = 0.08;                       // off-speed: the same swing, this much early
+const SLOW = 900 / 430;                   // approved: slow motion, true proportions
+const SWING_END = SWING[SWING.length - 1].t;   // he holds the finish from here
+
+// monotone cubic per channel, so holds stay still and nothing overshoots
+const TIMES = SWING.map(k => k.t);
+const CHANNELS = Object.keys(SWING[0]).filter(k => k !== "t" && k !== "name");
+const TANGENTS = {};
+for (const c of CHANNELS) {
+  const p = SWING.map(k => k[c]), n = p.length, d = [], m = new Array(n).fill(0);
+  for (let i = 0; i < n - 1; i++) d[i] = (p[i + 1] - p[i]) / (TIMES[i + 1] - TIMES[i]);
+  for (let i = 1; i < n - 1; i++) m[i] = d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2;
+  for (let i = 0; i < n - 1; i++) {
+    if (d[i] === 0) { m[i] = m[i + 1] = 0; continue; }
+    const a = m[i] / d[i], b = m[i + 1] / d[i], h = a * a + b * b;
+    if (h > 9) { const s = 3 / Math.sqrt(h); m[i] = s * a * d[i]; m[i + 1] = s * b * d[i]; }
+  }
+  TANGENTS[c] = m;
+}
+function channels(t) {
+  const n = TIMES.length;
+  if (t <= TIMES[0]) return SWING[0];
+  if (t >= TIMES[n - 1]) return SWING[n - 1];
+  let i = 0; while (t > TIMES[i + 1]) i++;
+  const h = TIMES[i + 1] - TIMES[i], s = (t - TIMES[i]) / h, s2 = s * s, s3 = s2 * s;
+  const a = 2 * s3 - 3 * s2 + 1, b = s3 - 2 * s2 + s, c = -2 * s3 + 3 * s2, d = s3 - s2;
+  const out = {};
+  for (const k of CHANNELS) out[k] = a * SWING[i][k] + b * h * TANGENTS[k][i] + c * SWING[i + 1][k] + d * h * TANGENTS[k][i + 1];
+  return out;
+}
+
+// two-bone IK: the joint between root and target, bending toward the pole
+function ik(root, target, l1, l2, pole) {
+  const d = sub(target, root), dist = Math.max(Math.abs(l1 - l2) + 1e-3, Math.min(len(d), l1 + l2 - 1e-3));
+  const dir = unit(d);
+  const a = Math.acos(Math.max(-1, Math.min(1, (l1 * l1 + dist * dist - l2 * l2) / (2 * l1 * dist))));
+  return add(root, add(mul(dir, l1 * Math.cos(a)), mul(perpTo(pole, dir), l1 * Math.sin(a))));
+}
+function foot(z, yaw, heel, lift) {
+  const toeDir = heading(yaw), h = rad(heel);
+  const ball = [FOOT_X, lift, z];
+  const along = add(mul(toeDir, Math.cos(h)), mul(UP, -Math.sin(h)));       // heel → ball
+  const normal = add(mul(UP, Math.cos(h)), mul(toeDir, Math.sin(h)));
+  const heelPt = sub(ball, mul(along, 0.19));
+  return { heel: heelPt, ball, toe: add(ball, mul(toeDir, 0.07)),
+           ankle: add(add(heelPt, mul(along, 0.05)), mul(normal, BODY.ankle)) };
+}
+const RELEASE_3D = [0, 1.9, -17], LOOK_AT = [0.05, 0.7, -0.6];
+
+function pose(t) {
+  const c = channels(t);
+  const P = [c.px, c.py, c.pz];
+  const fp = heading(c.pyaw), rp = rightOf(c.pyaw), ft = heading(c.tyaw), rt = rightOf(c.tyaw);
+  const cl = Math.cos(rad(c.lean));
+  const spine = unit(add(add(mul(UP, cl * Math.cos(rad(c.tilt))), mul(ft, Math.sin(rad(c.lean)))), mul(rt, Math.sin(rad(c.tilt)) * cl)));
+  const N = add(P, mul(spine, BODY.spine));
+  const across = perpTo(rt, spine), chest = perpTo(ft, spine);
+  const shL = sub(N, mul(across, BODY.shoulder)), shR = add(N, mul(across, BODY.shoulder));
+  const hipL = sub(P, mul(rp, BODY.hip)), hipR = add(P, mul(rp, BODY.hip));
+  const head = add(N, add(mul(spine, 0.05), mul(UP, 0.15)));
+  // the eyes ride the ball in from the release point to the contact point
+  const k = Math.max(0, Math.min(1, (t - T0) / -T0));
+  const look = unit(sub(lerp3(RELEASE_3D, LOOK_AT, k * k), head));
+
+  const u = [Math.cos(rad(c.el)) * Math.cos(rad(c.az)), Math.sin(rad(c.el)), -Math.cos(rad(c.el)) * Math.sin(rad(c.az))];
+  // both hands stay on the handle: pull the grip in if either arm can't reach
+  let G = [c.hx, c.hy, c.hz], strain = 0;
+  const reach = BODY.upper + BODY.fore - 0.005;
+  for (let i = 0; i < 4; i++) for (const [sh, off] of [[shL, -BODY.hands], [shR, BODY.hands]]) {
+    const d = sub(add(G, mul(u, off)), sh), L = len(d);
+    if (L > reach) { G = sub(G, mul(unit(d), L - reach)); strain += L - reach; }
+  }
+  const handL = add(G, mul(u, -BODY.hands)), handR = add(G, mul(u, BODY.hands));
+  const elbL = ik(shL, handL, BODY.upper, BODY.fore, add(mul(UP, -1), add(mul(across, -0.5), mul(chest, 0.2))));
+  const elbR = ik(shR, handR, BODY.upper, BODY.fore, add(mul(UP, -1), add(mul(across, 0.6), mul(chest, -0.1))));
+  const fF = foot(c.fz, c.fyaw, c.fh, c.fl), fB = foot(c.bz, c.byaw, c.bh, 0);
+  const kneeL = ik(hipL, fF.ankle, BODY.thigh, BODY.shin, add(heading(c.fyaw), mul(fp, 0.6)));
+  const kneeR = ik(hipR, fB.ankle, BODY.thigh, BODY.shin, add(heading(c.byaw), mul(fp, 0.6)));
+  const knob = sub(G, mul(u, BODY.grip));
+  return { t, P, N, spine, across, chest, fp, rp, shL, shR, hipL, hipR, head, look, u, G, knob,
+           handL, handR, elbL, elbR, kneeL, kneeR, fF, fB, strain,
+           at: d => add(knob, mul(u, d)) };
+}
+// where the barrel meets the fastball: the sweet spot at contact, on screen
+const CONTACT = (() => { const p = project(pose(0).at(SWEET)); return { x: p[0], y: p[1], scale: p[2] / (FOCAL / CAM.z) }; })();
+
+// the batter's clock for a pitch: a fooled hitter runs the same swing, sooner
+function swingTime(ms, hit) {
+  const real = ms / 1000 / SLOW, k = hit ? 1 : -T0 / (-T0 - EARLY), pre = -T0 / k;
+  return real < pre ? T0 + real * k : real - pre;
+}
+
+/* ================= drawing ================= */
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, cls, parent, attrs) {
+  const e = document.createElementNS(NS, tag);
+  if (cls) e.setAttribute("class", cls);
+  if (attrs) for (const k in attrs) e.setAttribute(k, attrs[k]);
+  parent.appendChild(e);
+  return e;
+}
+const f1 = n => n.toFixed(1);
+function seg(path, a, b, w) {
+  const p = project(a), q = project(b);
+  path.setAttribute("d", `M${f1(p[0])} ${f1(p[1])}L${f1(q[0])} ${f1(q[1])}`);
+  path.setAttribute("stroke-width", f1(w * (p[2] + q[2]) / 2));
+}
+function poly(path, pts, w) {
+  const pr = pts.map(project);
+  path.setAttribute("d", "M" + pr.map(p => `${f1(p[0])} ${f1(p[1])}`).join("L"));
+  path.setAttribute("stroke-width", f1(w * pr.reduce((s, p) => s + p[2], 0) / pr.length));
+}
+function disc(circle, c, r) {
+  const p = project(c);
+  circle.setAttribute("cx", f1(p[0])); circle.setAttribute("cy", f1(p[1])); circle.setAttribute("r", f1(r * p[2]));
+}
+function hull(path, pts, w) {
+  const pr = pts.map(project).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  const x = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lo = [], hi = [];
+  for (const p of pr) { while (lo.length > 1 && x(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+  for (let i = pr.length - 1; i >= 0; i--) { const p = pr[i]; while (hi.length > 1 && x(hi[hi.length - 2], hi[hi.length - 1], p) <= 0) hi.pop(); hi.push(p); }
+  const h = lo.slice(0, -1).concat(hi.slice(0, -1));
+  path.setAttribute("d", "M" + h.map(p => `${f1(p[0])} ${f1(p[1])}`).join("L") + "Z");
+  path.setAttribute("stroke-width", f1(w * pr[0][2]));
+}
+// a tapered solid along the bat: [distance from knob, radius] pairs
+function taper(path, q, profile) {
+  const a = project(q.knob), b = project(q.at(BODY.bat));
+  let nx = -(b[1] - a[1]), ny = b[0] - a[0];
+  const nl = Math.hypot(nx, ny) || 1; nx /= nl; ny /= nl;
+  const L = [], R = [];
+  for (const [d, r] of profile) {
+    const p = project(q.at(d)), w = r * p[2];
+    L.push(`${f1(p[0] + nx * w)} ${f1(p[1] + ny * w)}`);
+    R.unshift(`${f1(p[0] - nx * w)} ${f1(p[1] - ny * w)}`);
+  }
+  path.setAttribute("d", "M" + L.concat(R).join("L") + "Z");
+}
+const HANDLE = [[0, 0.012], [0.30, 0.013], [0.47, 0.018]];
+const BARREL = [[0.46, 0.018], [0.62, 0.033], [BODY.bat, 0.033]];
+
+function ring(out, c, across, front, a, b) {
+  for (let i = 0; i < 10; i++) { const th = i * Math.PI / 5; out.push(add(c, add(mul(across, a * Math.cos(th)), mul(front, b * Math.sin(th))))); }
+}
+function torsoPoints(q, top, bottom) {
+  // stacked elliptical sections, shoulders to seat; the hull of them is the outline
+  const pts = [], at = k => lerp3(q.P, q.N, k);
+  if (top) { ring(pts, sub(q.N, mul(q.spine, 0.05)), q.across, q.chest, 0.21, 0.10); ring(pts, at(0.72), q.across, q.chest, 0.18, 0.13); }
+  ring(pts, at(0.32), q.across, q.chest, 0.15, 0.11);
+  if (bottom) { ring(pts, q.P, q.rp, q.fp, 0.17, 0.12); ring(pts, add(q.P, add(mul(UP, -0.08), mul(q.fp, -0.03))), q.rp, q.fp, 0.14, 0.11); }
+  return pts;
+}
+
+/* makeRig(parent): draws the batter into an SVG group and returns draw(t),
+   t in real seconds with contact at 0. Solid chalk tones mixed into the
+   ground, so overlapping parts cover each other instead of brightening. */
+function makeRig(parent) {
+  const root = el("g", null, parent);
+  const tone = pct => ({ style: `--tone: color-mix(in srgb, var(--chalk) ${pct}%, var(--ground))` });
+  const body = el("g", null, root);
+  const shoes = el("g", null, body, tone(40)), socks = el("g", null, body, tone(48)), pants = el("g", null, body, tone(56));
+  const jersey = el("g", null, body, tone(72)), helmet = el("g", null, body, tone(46));
+  const leg = () => [el("path", "r-limb", pants), el("path", "r-limb", socks), el("path", "r-limb", shoes)];
+  const legL = leg(), legR = leg();
+  const hips = el("path", "r-solid", pants), torso = el("path", "r-solid", jersey), belt = el("path", "r-belt", body);
+  const neck = el("path", "r-limb", jersey), head = el("circle", "r-solid", helmet), brim = el("path", "r-limb", helmet);
+  const arm = () => { const g = el("g", null, root, tone(82)); return { g, up: el("path", "r-limb", g), lo: el("path", "r-limb", g) }; };
+  const armL = arm(), armR = arm();
+  const trail = el("g", null, root), bat = el("g", null, root);
+  const gloves = [el("circle", "r-solid", bat), el("circle", "r-solid", bat)];
+  const knob = el("circle", "r-handle", bat), handle = el("path", "r-handle", bat);
+  const barrel = el("path", "r-barrel", bat), cap = el("circle", "r-barrel", bat);
+  // a short ribbon behind the barrel along the path it really took, fast part only
+  const RIB = 12, RIB_DT = 0.008;
+  const ribbon = Array.from({ length: RIB }, () => el("path", "r-trail", trail));
+  const groups = [body, armL.g, armR.g, bat, trail];
+  let order = "";
+
+  return function draw(t) {
+    const q = pose(t);
+    for (const [p, hip, knee, f] of [[legL, q.hipL, q.kneeL, q.fF], [legR, q.hipR, q.kneeR, q.fB]]) {
+      seg(p[0], hip, lerp3(knee, f.ankle, 0.25), 0.17);   // pants, to just below the knee
+      seg(p[1], knee, f.ankle, 0.12);                      // socks
+      poly(p[2], [f.heel, f.ball, f.toe], 0.09);           // shoes
+    }
+    hull(torso, torsoPoints(q, true, false), 0.04);
+    hull(hips, torsoPoints(q, false, true), 0.04);
+    const waist = lerp3(q.P, q.N, 0.29);
+    seg(belt, sub(waist, mul(q.across, 0.17)), add(waist, mul(q.across, 0.17)), 0.025);
+    seg(neck, q.N, q.head, 0.11);
+    disc(head, q.head, 0.135);
+    seg(brim, add(q.head, add(mul(q.look, 0.1), mul(UP, 0.035))), add(q.head, add(mul(q.look, 0.2), mul(UP, 0.015))), 0.045);
+    seg(armL.up, q.shL, q.elbL, 0.10); seg(armL.lo, q.elbL, q.handL, 0.085);
+    seg(armR.up, q.shR, q.elbR, 0.10); seg(armR.lo, q.elbR, q.handR, 0.085);
+    disc(gloves[0], q.handL, 0.045); disc(gloves[1], q.handR, 0.045);
+    disc(knob, q.knob, 0.022);
+    taper(handle, q, HANDLE); taper(barrel, q, BARREL); disc(cap, q.at(BODY.bat), 0.033);
+
+    let prev = null;
+    for (let i = 0; i <= RIB; i++) {
+      const ti = t - i * RIB_DT, on = ti >= -0.09 && ti <= 0.16;   // slot to rollover
+      const r = pose(ti), a = project(r.at(0.5)), b = project(r.at(BODY.bat));
+      if (i > 0) {
+        const path = ribbon[i - 1];
+        if (on && prev.on) {
+          path.setAttribute("d", `M${f1(prev.a[0])} ${f1(prev.a[1])}L${f1(prev.b[0])} ${f1(prev.b[1])}L${f1(b[0])} ${f1(b[1])}L${f1(a[0])} ${f1(a[1])}Z`);
+          path.setAttribute("opacity", (0.5 * (1 - (i - 1) / RIB)).toFixed(2));
+        } else path.setAttribute("d", "");
+      }
+      prev = { a, b, on };
+    }
+
+    // painter's order: far parts first, re-sorted only when it changes
+    const z = (...ps) => ps.reduce((s, p) => s + p[2], 0) / ps.length;
+    const items = [[body, q.P[2]], [armL.g, z(q.shL, q.elbL, q.handL)], [armR.g, z(q.shR, q.elbR, q.handR)],
+                   [bat, q.at(0.45)[2]], [trail, q.at(0.45)[2] - 0.001]].sort((x, y) => x[1] - y[1]);
+    const key = items.map(i => groups.indexOf(i[0])).join("");
+    if (key !== order) { order = key; for (const [g] of items) root.appendChild(g); }
+    return q;
+  };
+}
+
+return { makeRig, swingTime, CONTACT, T0, SWING_END, SWING, SLOW, pose, project, el, f1 };
+})();
+
+// the barrel meets the fastball wherever the rig's sweet spot is at contact:
+// out in front of the plate, so a touch farther away and smaller
+const CONTACT_POINT = BatterRig.CONTACT;
+let swingRun = 0;
+// var, not const: showTab can run before this line, and resetBatter checks it
+var drawBatter = document.querySelector(".batter") ? BatterRig.makeRig(document.querySelector(".batter")) : null;
+if (drawBatter) drawBatter(BatterRig.T0);
+document.querySelector(".burst-at")?.setAttribute("transform", `translate(${CONTACT_POINT.x.toFixed(1)},${CONTACT_POINT.y.toFixed(1)})`);
+
+// one swing at a time, on its own clock from the release; he holds the finish
+function swingBatter(hit) {
+  if (!drawBatter) return;
+  const run = ++swingRun, start = performance.now();
+  const step = now => {
+    if (run !== swingRun) return;
+    const t = BatterRig.swingTime(now - start, hit);
+    drawBatter(t);
+    if (t < BatterRig.SWING_END) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+function resetBatter() {
+  if (!drawBatter) return;
+  swingRun++;
+  drawBatter(BatterRig.T0);
+}
+
+/* The seams are the real curve on a sphere, turned about each pitch's spin axis
+   (catcher's view: x toward first base, y up, z toward us) and drawn where they
+   face us. Relative rates are real; the spin itself is slowed further than the
+   flight, since 2,300 rpm at any frame rate is a blur. */
+const SPIN = {
+  1: [[-0.97, -0.24, 0], 2300],   // four-seam: backspin, a touch arm-side
+  2: [[0.35, 0.10, 0.93], 2450],  // slider: mostly gyro, the spinning dot
+  3: [[0.98, 0.20, 0], 2500],     // curveball: topspin
+  4: [[-0.80, -0.56, 0.20], 1750],// changeup: backspin tilted to the arm side
+  5: [[-0.60, -0.76, 0.25], 2150],// sinker: mostly sidespin
+  6: [[0.30, -0.30, 0.90], 2400], // cutter: gyro with a little backspin
+};
+const SPIN_TURNS = 2.2;           // turns a 2,300 rpm pitch makes on its way in
+const SEAM = Array.from({ length: 120 }, (_, i) => {
+  const t = i / 120 * 2 * Math.PI, a = 0.7, b = 0.3;   // a + b = 1 keeps it on the sphere
+  return [a * Math.cos(t) + b * Math.cos(3 * t), a * Math.sin(t) - b * Math.sin(3 * t), 2 * Math.sqrt(a * b) * Math.sin(2 * t)];
+});
+function drawSeam(path, axis, angle) {
+  const l = Math.hypot(...axis), [kx, ky, kz] = axis.map(v => v / l), c = Math.cos(angle), s = Math.sin(angle), r = 15;
+  let d = "", pen = false;
+  for (const [px, py, pz] of SEAM.concat([SEAM[0]])) {
+    const k = (kx * px + ky * py + kz * pz) * (1 - c);       // Rodrigues' rotation
+    const x = px * c + (ky * pz - kz * py) * s + kx * k;
+    const y = py * c + (kz * px - kx * pz) * s + ky * k;
+    const z = pz * c + (kx * py - ky * px) * s + kz * k;
+    if (z > 0) { d += `${pen ? "L" : "M"}${(x * r).toFixed(1)} ${(-y * r).toFixed(1)}`; pen = true; } else pen = false;
+  }
+  path.setAttribute("d", d);
+}
+document.querySelectorAll(".ball").forEach(g => drawSeam(g.querySelector(".ball-seam"), SPIN[g.dataset.p][0], 0));
+function spinBall(g, n, ms) {
+  const seam = g.querySelector(".ball-seam"), [axis, rpm] = SPIN[n];
+  const rate = rpm / 2300 * SPIN_TURNS * 2 * Math.PI / TRAVEL_MS, start = performance.now();
+  const step = now => {
+    const e = Math.min(ms, now - start);
+    drawSeam(seam, axis, e * rate);
+    if (e < ms && g.classList.contains("thrown")) requestAnimationFrame(step);   // a caught ball stops
+  };
+  requestAnimationFrame(step);
+}
 
 function ballRest(g) {
   const t = g.getAttribute("transform").match(/translate\(([-\d.]+),\s*([-\d.]+)\)/);
@@ -1688,96 +1965,26 @@ function ballRest(g) {
 
 function playPitch(n) {
   const g = document.getElementById(`m${n}`);
-  const swing = document.querySelector(".b-swing");
-  const body = document.querySelector(".b-body");
-  const arc  = document.querySelector(".b-arc");
-  const reach = document.querySelector(".b-reach");
-  const trail = document.querySelector(".bat-trail");
   const burst = document.querySelector(".contact-burst");
-  const armBack = document.getElementById("arm-back");
-  const armFront = document.getElementById("arm-front");
-  if (!g || !swing || !body || !arc || !reach || !trail || !burst || reduceMotion.matches) return Promise.resolve();
+  if (!g || !burst || reduceMotion.matches) return Promise.resolve();
   if (g.classList.contains("thrown")) return Promise.resolve();
   g.classList.add("thrown");
 
   const rest = ballRest(g);
   const hit = n === FASTBALL;
   // a hit ball never reaches its plate-crossing spot; it is met in front of it
-  const land = hit ? CONTACT_POINT : rest;
+  const land = hit ? CONTACT_POINT : { ...rest, scale: 1 };
 
   // the ball, growing as it comes
   const travel = g.animate([
     { transform: `translate(${RELEASE.x}px, ${RELEASE.y}px) scale(${RELEASE.scale})`, opacity: 0.35 },
-    { transform: `translate(${land.x}px, ${land.y}px) scale(1)`, opacity: 1 },
+    { transform: `translate(${land.x}px, ${land.y}px) scale(${land.scale})`, opacity: 1 },
   ], { duration: TRAVEL_MS, easing: "cubic-bezier(0.55, 0, 0.9, 0.6)", fill: "forwards" });
 
-  // the fastball is timed so the barrel arrives with the ball; every off-speed
-  // pitch draws the same swing started early, so the bat is through the zone
-  // before the ball gets there — which is how you actually miss one
-  const swingAt = hit ? TRAVEL_MS - SWING_TOTAL * CONTACT_FRAC : 0;
-  setTimeout(() => {
-    // rotateY turns the shoulders about the spine, so the bat sweeps across
-    // the body and foreshortens on the way round, the way it looks from behind
-    // the shoulders turn about the spine, further than the hips
-    swing.animate([
-      { transform: "perspective(620px) rotateY(0deg)" },
-      { transform: "perspective(620px) rotateY(24deg)", offset: 0.34 },
-      { transform: "perspective(620px) rotateY(44deg)", offset: CONTACT_FRAC },
-      { transform: "perspective(620px) rotateY(50deg)", offset: 0.78 },
-      { transform: "perspective(620px) rotateY(0deg)" },
-    ], { duration: SWING_TOTAL, easing: "cubic-bezier(0.34, 0, 0.18, 1)" });
-
-    // the arms straighten and carry the hands and bat away from the body
-    reach.animate([
-      { transform: "translate(0px, 0px)" },
-      { transform: "translate(-5px, -3px)", offset: 0.34 },
-      { transform: "translate(-13px, -9px)", offset: CONTACT_FRAC },
-      { transform: "translate(-10px, -7px)", offset: 0.78 },
-      { transform: "translate(0px, 0px)" },
-    ], { duration: SWING_TOTAL, easing: "cubic-bezier(0.34, 0, 0.18, 1)" });
-
-    // ...and the elbows actually open, instead of staying folded
-    armBack.animate([
-      { d: 'path("M108 118 L100 134 L94 102")' },
-      { d: 'path("M108 118 L97 122 L83 93")', offset: CONTACT_FRAC },
-      { d: 'path("M108 118 L100 134 L94 102")' },
-    ], { duration: SWING_TOTAL, easing: "cubic-bezier(0.34, 0, 0.18, 1)" });
-    armFront.animate([
-      { d: 'path("M140 120 L130 136 L98 106")' },
-      { d: 'path("M140 120 L112 108 L85 97")', offset: CONTACT_FRAC },
-      { d: 'path("M140 120 L130 136 L98 106")' },
-    ], { duration: SWING_TOTAL, easing: "cubic-bezier(0.34, 0, 0.18, 1)" });
-    // and inside that, the barrel drops from behind the ear into the zone
-    arc.animate([
-      { transform: "rotate(12deg)" },
-      { transform: "rotate(-105deg)", offset: 0.34 },   // barrel drops into the slot
-      { transform: "rotate(-195deg)", offset: CONTACT_FRAC },  // through the zone
-      { transform: "rotate(-232deg)", offset: 0.78 },   // follow-through
-      { transform: "rotate(0deg)" },
-    ], { duration: SWING_TOTAL, easing: "cubic-bezier(0.34, 0, 0.18, 1)" });
-
-    // the trail draws itself along that same arc, then fades
-    const len = trail.getTotalLength();
-    trail.style.strokeDasharray = len;
-    trail.animate([
-      { strokeDashoffset: len, opacity: 0 },
-      { strokeDashoffset: len * 0.92, opacity: 0.35, offset: 0.10 },
-      { strokeDashoffset: len * 0.45, opacity: 0.6, offset: 0.34 },
-      { strokeDashoffset: len * 0.12, opacity: 0.75, offset: CONTACT_FRAC },
-      { strokeDashoffset: 0, opacity: 0.45, offset: 0.78 },
-      { strokeDashoffset: 0, opacity: 0 },
-    ], { duration: SWING_TOTAL, easing: "cubic-bezier(0.34, 0, 0.18, 1)" });
-    // the hips open with the swing, so the body is not a mannequin the arms rotate around
-    // the hips open first and the hands follow. The back side also sits down
-    // into the swing — the drop is what stops him looking like a turnstile.
-    body.animate([
-      { transform: "perspective(620px) rotateY(0deg) rotate(0deg) translateY(0px)" },
-      { transform: "perspective(620px) rotateY(16deg) rotate(-2deg) translateY(3px)", offset: 0.30 },
-      { transform: "perspective(620px) rotateY(30deg) rotate(-5deg) translateY(7px)", offset: CONTACT_FRAC },
-      { transform: "perspective(620px) rotateY(34deg) rotate(-6deg) translateY(6px)", offset: 0.78 },
-      { transform: "perspective(620px) rotateY(0deg) rotate(0deg) translateY(0px)" },
-    ], { duration: SWING_TOTAL, easing: "cubic-bezier(0.34, 0, 0.18, 1)" });
-  }, Math.max(0, swingAt));
+  // the same swing on every pitch, timed for the fastball, so anything
+  // slower finds him already through the zone: how you actually miss one
+  swingBatter(hit);
+  spinBall(g, n, hit ? TRAVEL_MS + FLIGHT_MS : TRAVEL_MS);
 
   if (!hit) {
     // he swung and missed, so it is a strike wherever the pitch finished up
@@ -1810,7 +2017,7 @@ function playPitch(n) {
     if (!hit) { g.classList.remove("thrown"); return; }
     // contact: the ball leaves the frame toward the outfield
     const flight = g.animate([
-      { transform: `translate(${land.x}px, ${land.y}px) scale(1)`, opacity: 1 },
+      { transform: `translate(${land.x}px, ${land.y}px) scale(${land.scale})`, opacity: 1 },
       { transform: "translate(470px, 40px) scale(0.18)", opacity: 0 },
     ], { duration: FLIGHT_MS, easing: "cubic-bezier(0.2, 0.6, 0.4, 1)" });
     return flight.finished.then(() => { g.classList.remove("thrown"); });
