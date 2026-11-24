@@ -74,7 +74,7 @@ Seven views, all in `src/api/static/index.html`, switched by `showTab()` with no
 
 | View | id | Notes |
 |---|---|---|
-| Home | `tab-home` | Batter's box; each of the six pitch tiles throws its pitch at the batter, who swings (§10), then opens its section after a one-second hold. Balls are hidden until thrown |
+| Home | `tab-home` | Batter's box; each of the six pitch tiles (pitch type, section, one line; no numbers) throws its pitch at the batter, who swings (§10), then opens its section after a one-second hold. Balls are hidden until thrown |
 | Predictions | `tab-predict` | Unchanged layout, controls and `/predict` payload; matchup card keeps its own design, corners squared |
 | Players | `tab-players` | Unchanged chart logic; restyled by token alias alone |
 | Teams | `tab-teams` | As above, plus ruled tile grid |
@@ -127,13 +127,13 @@ No Figma files.
 
 ## 8. Decision Log
 
-Thirty-two decisions in `decisions.md`. The ones that shaped the result: sibling-not-clone identity;
+Thirty-three decisions in `decisions.md`. The ones that shaped the result: sibling-not-clone identity;
 home page plus restyle (not a full rebuild); six pitches; the name **Full Count**; Direction A;
 red/blue for home and away; keeping the matchup card and squaring only its corners; aliasing
 tokens rather than renaming; `fill-opacity` 0.85 for scatter dots; Matchups as head-to-head
 history; approving one new read-only route; real MLB logos. At M7: a rig at true proportions in slow
 motion (×2.1) rather than real time; direction C, Uniform; the new still pose; spinning balls with no
-numbers or dotted outline.
+numbers or dotted outline, and no numbers on the tiles either.
 
 ## 9. Known Issues & Next Steps
 
@@ -148,9 +148,6 @@ numbers or dotted outline.
 - **Matchups covers one season** (the latest in `game_log.csv`, currently 2024). Multi-season
   history would widen the route.
 - **The Compare (scatter) view** was never mocked; it inherits the tokens and the dot-opacity fix.
-- **The tiles still carry the numbers 1–6.** The balls lost theirs at M7 (decision 31), so nothing
-  in the diagram points back to a tile any more. Remove the tile numbers too if the pairing isn't
-  wanted.
 - **Seams sit at 2.55:1 against the ball.** Decoration on an `aria-hidden` element; passing would
   mean leaving `--accent`.
 

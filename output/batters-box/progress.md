@@ -1,7 +1,7 @@
 # Progress — batters-box
 
 **Current phase:** Phase 4 — M7, a realistic swing (scope added on resume, 2026-11-24)
-**Status:** complete — M7 committed and pushed as `f1270d0` on `main`. M1–M7 and Phase 5 are complete and pushed.
+**Status:** complete — M7 pushed as `f1270d0`; the tile numbers removed and the CI runner pinned to Ubuntu 24.04 on 2026-11-24. M1–M7 and Phase 5 are complete.
 
 ## Completed milestones
 - **2026-11-20** — Phase 0: project root confirmed (`/Users/arins/Documents/Projects/BaseballModel`); no earlier design projects found.
@@ -29,10 +29,12 @@
 - **2026-11-24** — Round 5 approved, including the new still pose. The user then asked for spinning balls with no numbers or dotted outline; built as round 6 in `iterations/round-6/` on top of round 5.
 - **2026-11-24** — Round 6 approved. **M7c:** `iterations/round-6/build.py` wrote `src/api/static/index.html` (1930 → 2109 lines). Verified against the running API: fastball swung and met with the burst, changeup swung early with "Strike", sections open, stance restored, seams spin, no console errors; 25/25 tests pass. `design-spec.md` gained §10; `final/batters-box.svg` re-exported from the page by `iterations/round-6/export-svg.js` (stance matches the live page path for path).
 - **2026-11-24** — M7 committed and **pushed** to `arinb44/MLB-predictive-model` as `f1270d0` on `main` (42 files; `.claude/` left out). No AI markers in the message; author unchanged.
+- **2026-11-24** — The 1–6 removed from the pitch tiles at the user's request (decision 33). 25/25 tests pass; checked on the running app.
+- **2026-11-24** — The user reported the GitHub `Tests / pytest` check failing. Cause: `ubuntu-latest` is now Ubuntu 26.04, which has no Python 3.9 build, so setup fails before pytest runs; every push since `bfc6f4a` (2026-11-20) is red. Not caused by M7. Fixed, with the user's approval, by pinning `.github/workflows/tests.yml` to `ubuntu-24.04`.
 - **2026-11-20** — Committed and **pushed** to `arinb44/MLB-predictive-model` as `bfc6f4a` on `main`. The first push was rejected because this checkout's `main` was a parallel rewrite of the remote's history (same 11 subjects, different hashes and dates, identical trees); the user rebased the single unpushed commit onto `origin/main`, which resolved it. 25/25 tests pass on the rebased commit.
 
 ## Next step
-None required. Optional: remove the 1–6 on the tiles too, if the user meant those (design-spec §9).
+None required.
 
 ## Open questions
 1. ~~Should `output/` be committed?~~ — **committed and pushed** as `3b7bbe0`, with `.profile/` and `.taste-skill/` gitignored. `.claude/` stays local.
